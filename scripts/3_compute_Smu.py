@@ -46,8 +46,8 @@ if compute_envelopes:
 
     cls = np.zeros((N_maps, 384))
     for n in range(0, N_maps):
-        name_cl = "cl"+name_mask+"__"+str(n)+".txt"
-        cls[n] = np.loadtxt(fn_corrs+name).T[2]
+        name_cl = "cl_"+name_mask+"__"+str(n)+".txt"
+        cls[n] = np.loadtxt(fn_corrs+name_cl).T[1]
 
     mean_cls = np.mean(cls, axis=0)
     std_cls = np.std(cls, axis=0)
