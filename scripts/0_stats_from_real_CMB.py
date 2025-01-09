@@ -46,6 +46,7 @@ for i in range(len(names_map)):
                 os.system('spice -mapfile '+fn_real+name_map+'  -corfile '+fn_real+name_corr+' -clfile '+fn_real+name_pcl)
             else:
                 os.system('spice -mapfile '+fn_real+name_map+' -maskfile '+fn_mask+name_mask+'  -corfile '+fn_real+name_corr+' -clfile '+fn_real+name_pcl)
+                
 
         if compute_Smu:
             os.system('echo "Computing Smu from real maps"')
