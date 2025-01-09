@@ -1,4 +1,5 @@
 import numpy as np
+import healpy as hp
 import matplotlib.pyplot as plt
 import scipy.integrate as integrate
 from scipy.interpolate import UnivariateSpline
@@ -10,10 +11,10 @@ mu = 0.5
 summation = True
 compute_Smu = False
 compute_envelopes = True
+name_mask = "commask"
 fn_corrs = "../data/sims/"
-name_mask = "stdmask"
 fn_Smu = "../data/stats/"
-name_Smu = "Smu_sims_stdmask_Nmaps_"
+
 
 # Read C(\theta)'s                                                              
 C_theta = np.zeros((N_maps, 384))
@@ -36,7 +37,8 @@ if compute_Smu:
             C_theta_int = UnivariateSpline(cos_theta, C_theta[n]**2)
             S_mu[n] = integrate.quad(C_theta_int, -1, mu)[0]
 
-    np.savetxt(fn_Smu+name_Smu+str(N_maps)+".npy", S_mu)
+    ame_Smu = "Smu_sims_"+name_mask+"_Nmaps_"+str(N_maps)+".npy"
+    np.savetxt(fn_Smu+name_Smu, S_mu)
 
 
 if compute_envelopes:
@@ -44,10 +46,14 @@ if compute_envelopes:
     std_corr = np.std(C_theta, axis=0)
     np.savetxt(fn_Smu+"corr_mean_std_"+name_mask+".npy", np.array([mean_corr, std_corr]))
 
+    # Correct for pixel window fct. & beam (smoothing window fct.)
+    pixwin_128 = hp.pixwin(128)[:384]
+    beam_128 = hp.sphtfunc.gauss_beam(fwhm=80*np.pi/(60.*180.), lmax=383, pol=False)
+
     cls = np.zeros((N_maps, 384))
     for n in range(0, N_maps):
         name_cl = "cl_"+name_mask+"__"+str(n)+".txt"
-        cls[n] = np.loadtxt(fn_corrs+name_cl).T[1]
+        cls[n] = np.loadtxt(fn_corrs+name_cl).T[1]//(beam_128**2*pixwin_128**2)
 
     mean_cls = np.mean(cls, axis=0)
     std_cls = np.std(cls, axis=0)
