@@ -93,7 +93,8 @@ def gen_maps_from_cls(cldatfile=cldatfile, outdir=outdir_simmaps, Nside=NSIDEfid
     seeds = np.arange(N_start,N_start+N_maps)
     for seed in seeds:
         np.random.seed(seed)
-        outf = get_filename_testcase(outdir,'map', Nside, seed,'map')
+        #outf = get_filename_testcase(outdir,'map', Nside, seed,'map')
+        outf = outdir+"map__"+str(seed)+".fits"
         if regen:
             m = hp.sphtfunc.synfast(Clist, nside=Nside, fwhm=arcmin2rad(NSIDEtoFWHMarcmin[Nside]), pixwin=True)
             hp.write_map(outf, m, overwrite=True, dtype=np.float64)

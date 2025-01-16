@@ -1,15 +1,15 @@
 #!/bin/bash                                                                                                                                                                     
 NMIN=0
-NMAX=10000
-OUTDIR="../data/sims"
+NMAX=1000
+OUTDIR="../data/sims/sims_1k"
 # Full sky
-##MASKFILE="None"
+MASKFILE="None"
 # Common mask
-##MASKFILE="/home/lherold/data/masks/common-Mask-Int_cutoff0.9_Nside128.fits"
+##MASKFILE="../data/masks/common-Mask-Int_cutoff0.9_Nside128.fits"
 ##MASKLABEL="commask"
 # Std. mask
-MASKFILE="/home/lherold/data/masks/stdv_mask_1percent.fits_v2.fits"
-MASKLABEL="stdmask"
+##MASKFILE="../data/masks/stdv_mask_1percent.fits_v2.fits"
+##MASKLABEL="stdmask"
 
 if [[ "$MASKFILE" == "None" ]]; then
     for N in `seq $NMIN $NMAX`; do
