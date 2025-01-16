@@ -34,7 +34,7 @@ def downgrade_map(inmap, NSIDEout):
     #get coefficent to covolve with beam and pixel window func
     plout = hp.sphtfunc.pixwin(NSIDEout)
     lmax = plout.size-1
-    print("lmax: ", lmax)
+    #print("lmax: ", lmax)
     NSIDEin = hp.get_nside(inmap)
     plin = hp.sphtfunc.pixwin(NSIDEin)[:lmax+1]
     fwhmin = arcmin2rad(NSIDEtoFWHMarcmin[NSIDEin])
@@ -280,6 +280,16 @@ def get_Rassymstat(cl,lmax=27,clstartsat=0):
     
 def sigma_16(map, mask):
     return np.nanstd(map*mask)**2
+    
+##################################################################
+# Multipole alignments, S_QO
+##################################################################
+    
+def S_QO(ws):
+    S = 0
+    for i in range(3):
+        S+= np.absolute(np.dot(ws[2], ws[3][i]))[0]
+    return S/3.
     
 ##################################################################
 # ALV -- needs adaption
