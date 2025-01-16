@@ -5,29 +5,50 @@ import scipy.integrate as integrate
 from scipy.interpolate import UnivariateSpline
 import CMBanom
 
-# Parameters
+# Parameters                                                                                                              
 N_maps = 10000
-mu = 0.5
-summation = True
-compute_Smu = False
-compute_envelopes = True
 names_mask = ["fullsky", "stdmask", "commask"]
-fn_corrs = "../data/sims/"
+fn_corrs = "/tank/NoBackup/lherold/sims"
 fn_Smu = "../data/stats/"
+
+## Cl's and corr's function
+compute_envelopes = False
+
+## Low correlation, Smu
+compute_Smu = False
+summation = True
+mu = 0.5
+
+# Parity asymmetry, R
+compute_R = False
+
+# Quadrupole-octopole alignment, SQO
+compute_SQO = False
+
+# Hemispherical asymmetry, sigma16
+compute_sigma16 = True
 
 for m in range(len(names_mask)):
     name_mask = names_mask[m]
-    # Read C(\theta)'s                                                              
-    C_theta = np.zeros((N_maps, 384))
-    for n in range(0, N_maps):
-        name = "corr_"+name_mask+"__"+str(n)+".txt"
-        C_theta[n] = np.loadtxt(fn_corrs+name).T[2]
-    theta = np.loadtxt(fn_corrs+name).T[0]
-    cos_theta = np.loadtxt(fn_corrs+name).T[1]
-    dtheta = np.append(theta[:-1] - theta[1:], np.zeros(1))
-    dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
 
-    # Compute Smu
+    if compute_sigma16:
+        pass
+
+    if compute_SQO:
+        pass
+
+    # Read correlation function
+    if compute_Smu or compute_R:
+        C_theta = np.zeros((N_maps, 384))
+        for n in range(0, N_maps):
+            name = "corr_"+name_mask+"__"+str(n)+".txt"
+            C_theta[n] = np.loadtxt(fn_corrs+name).T[2]
+        theta = np.loadtxt(fn_corrs+name).T[0]
+        cos_theta = np.loadtxt(fn_corrs+name).T[1]
+        dtheta = np.append(theta[:-1] - theta[1:], np.zeros(1))
+        dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
+
+    # Low correlation, Smu
     if compute_Smu:
         if summation:
             S_mu = CMBanom.S_mu_many(C_theta, cos_theta, mu)
@@ -41,7 +62,7 @@ for m in range(len(names_mask)):
         name_Smu = "Smu_sims_"+name_mask+"_Nmaps_"+str(N_maps)+".npy"
         np.savetxt(fn_Smu+name_Smu, S_mu)
 
-
+    # Compute Cl and corr envelopes
     if compute_envelopes:
         mean_corr = np.mean(C_theta, axis=0)
         std_corr = np.std(C_theta, axis=0)

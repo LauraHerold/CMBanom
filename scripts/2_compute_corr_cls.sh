@@ -1,7 +1,7 @@
 #!/bin/bash                                                                                                                                                                     
 NMIN=0
 NMAX=1000
-OUTDIR="../data/sims/sims_1k"
+OUTDIR="/tank/NoBackup/lherold/sims"
 # Full sky
 MASKFILE="None"
 # Common mask

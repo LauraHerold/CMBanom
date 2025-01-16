@@ -1,4 +1,3 @@
-
 # This script is an adaption of Jessica Muir's github https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer/tree/master and paper https://arxiv.org/abs/1806.02354
 import numpy as np
 import healpy as hp
@@ -256,6 +255,9 @@ def tabulate_Ifunc(x,LMAX):
     
     return Imat[:-1,:-1]
 
+##################################################################                                                                                                  
+# Parity asymmetry
+##################################################################
 
 # Taken from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer 
 def get_Rassymstat(cl,lmax=27,clstartsat=0):
