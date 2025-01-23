@@ -17,7 +17,7 @@ names_mask = ["fullsky", "stdmask", "commask"]
 mask_files = [None, "stdv_mask_1percent_cutoff0.9_Nside16.fits", "common-Mask-Int_cutoff0.9_Nside16.fits"]
 
 ## Cl's and corr's function
-compute_envelopes = False
+compute_envelopes = True
 
 ## Low correlation, Smu
 compute_Smu = False
