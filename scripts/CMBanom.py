@@ -24,6 +24,7 @@ def arcmin2rad(angle):
     """
     return angle*np.pi/(60.*180.)
 
+
 # Taken from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer
 def downgrade_map(inmap, NSIDEout):
     """
@@ -47,32 +48,6 @@ def downgrade_map(inmap, NSIDEout):
     alm = hp.almxfl(alm,multby)  #colvolve w/window funcs
     outmap = hp.sphtfunc.alm2map(alm,NSIDEout)
     return outmap
-
-# Adapted from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer
-def get_filename_testcase(datadir,mapbase,nside,number,stattype = 'map', maskname='',extratag = ''):
-    if stattype == 'map':
-        ending = '.fits'
-    elif stattype == 'cl':
-        ending = '.cl.dat'
-    elif stattype == 'ct':
-        ending = '.ct.dat'
-    elif stattype == 'lvmap':
-        ending = '.{0:s}.fits'.format(extratag)
-    elif stattype == 'statsummary':
-        ending = '.stats.dat'
-    elif stattype == 'Rall':
-        ending = '.Rall.dat'
-    elif stattype == 'Rall-contours':
-        ending = '.Rall-contours.dat'
-    elif stattype == 'Rall-contours-singletail':
-        ending = '.Rall-contours-singletail.dat'
-    elif stattype == 'Rall-contours-hist':
-        ending = '.Rall-contours-hist.dat'
-    if maskname:
-        maskstr = '-'+maskname
-    else:
-        maskstr = ''
-    return ''.join([datadir,mapbase, '_', str(nside), '_', maskstr,'_{0:d}'.format(number), ending])
 
 
 # Adapted from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer 
@@ -101,17 +76,28 @@ def gen_maps_from_cls(cldatfile=cldatfile, outdir=outdir_simmaps, Nside=NSIDEfid
         if returnoutf:
             outfiles.append(outf)
     return outfiles
-    
+
+
+def get_cl_wf_factor(Nside, deg=None, lmax=384):
+    if deg == None: deg = NSIDEtoFWHMarcmin[Nside]/60.
+    deg_rad = deg*np.pi/180.
+    pixwin = hp.pixwin(Nside)[:lmax]
+    beam = hp.sphtfunc.gauss_beam(fwhm=deg_rad, lmax=lmax-1)
+    return 1./pixwin**2/beam**2
+            
+
 def pval_lower(val_real, vals_sims):
     return len(np.where(vals_sims<val_real)[0])/len(vals_sims)
     
     
 def pval_higher(val_real, vals_sims):
     return len(np.where(vals_sims>val_real)[0])/len(vals_sims)
-    
+
+
 ##################################################################
 # Low correlation, S_1/2
 ##################################################################
+
 
 def corr_from_cl(theta, C_l, lmax=30):
     # Cl's starting from l=0
@@ -122,42 +108,49 @@ def corr_from_cl(theta, C_l, lmax=30):
     for l in ll:
         corr+= (2.*l + 1.)/(4*np.pi) * C_l[int(l)] * legendre(l)(cos)
     return corr
-    
-def S_mu_many(C_theta, cos_theta, mu):
-    """
-    Compute S_mu via naive summation of C_theta_i**2 * cos_theta_i
-    """
-    dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
-            
-    # Sum only over C_theta where cos_theta<mu
-    C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
-    S_mu = np.sum(C_theta_mu**2*dcos_theta, axis=1)
-        
-    return S_mu
 
-def S_mu_sum(corr_file, mu):
+def load_corrs(fn_corrs, name_mask, Nsims):
+    theta, cos_theta = np.loadtxt(fn_corrs+f'corr_{name_mask}__1.txt').T[0:2]
+    corrs = np.array([np.loadtxt(fn_corrs+f'corr_{name_mask}__{n}.txt').T[2] for n in range(Nsims)])
+    return theta, cos_theta, corrs
+
+def S_mu_many(C_theta, cos_theta, mu, summation=True):
     """
     Compute S_mu via naive summation of C_theta_i**2 * cos_theta_i
     """
-    if len(corr_file.shape)==2:
-        cos_theta = corr_file[1]
+    if summation:
         dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
-        C_theta = 1e12*corr_file[2]
-        
-        # Sum only over C_theta where cos_theta<mu
-        C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
-        S_mu = np.sum(C_theta_mu**2*dcos_theta)
-        
-    elif len(corr_file.shape)==3:
-        cos_theta = corr_file[0,1]
-        dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
-        C_theta = 1e12*corr_file[:,2]
-        
+            
         # Sum only over C_theta where cos_theta<mu
         C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
         S_mu = np.sum(C_theta_mu**2*dcos_theta, axis=1)
-    else:
-        print("Unexpected dimension of corr_file.")   
+        
+    return S_mu
+
+def S_mu_sum(corr_file, mu, summation=True):
+    """
+    Compute S_mu via naive summation of C_theta_i**2 * cos_theta_i
+    """
+    if summation:
+        if len(corr_file.shape)==2:
+            cos_theta = corr_file[1]
+            dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
+            C_theta = 1e12*corr_file[2]
+        
+            # Sum only over C_theta where cos_theta<mu
+            C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
+            S_mu = np.sum(C_theta_mu**2*dcos_theta)
+        
+        elif len(corr_file.shape)==3:
+            cos_theta = corr_file[0,1]
+            dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
+            C_theta = 1e12*corr_file[:,2]
+        
+            # Sum only over C_theta where cos_theta<mu
+            C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
+            S_mu = np.sum(C_theta_mu**2*dcos_theta, axis=1)
+        else:
+            print("Unexpected dimension of corr_file.")   
     return S_mu
 
 
@@ -255,25 +248,32 @@ def tabulate_Ifunc(x,LMAX):
     
     return Imat[:-1,:-1]
 
-##################################################################                                                                                                  
+##################################################################                                                                         
 # Parity asymmetry
 ##################################################################
 
-# Taken from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer 
+def load_cls(fn_cls, name_mask, Nsims, cl_wf_factor):
+    cls = np.array([np.loadtxt(fn_cls+f'cl_{name_mask}__{n}.txt').T[1] for n in range(Nsims)])*cl_wf_factor
+    return cls
+
+# Adapted from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer 
 def get_Rassymstat(cl,lmax=27,clstartsat=0):
     """
     Given C_ell data and lmax, computes R stat as on page 25 of
     https://arxiv.org/abs/1506.07135, which measures amount of parity
     assymetry. If 1, no assymetry, >1 even parity pref, <1 odd parity pref
     """
-   
-    LMIN=2
-    ell = np.arange(LMIN,lmax+1)
-    isodd = (ell%2).astype(bool)
-    iseven = np.logical_not(isodd)
 
-    Dl = ell*(ell+1.)*cl[LMIN-clstartsat:lmax+1-clstartsat]
-    R = np.mean(Dl[iseven])/np.mean(Dl[isodd])
+    if lmax<3:
+        R = 1.
+    else:
+        LMIN=2
+        ell = np.arange(LMIN,lmax+1)
+        isodd = (ell%2).astype(bool)
+        iseven = np.logical_not(isodd)
+
+        Dl = ell*(ell+1.)*cl[LMIN-clstartsat:lmax+1-clstartsat]
+        R = np.mean(Dl[iseven])/np.mean(Dl[isodd])
     
     return R
     
@@ -297,6 +297,33 @@ def S_QO(ws):
 ##################################################################
 # ALV -- needs adaption
 ##################################################################
+
+
+# Adapted from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer                                                       
+def get_filename_testcase(datadir,mapbase,nside,number,stattype = 'map', maskname='',extratag = ''):
+    if stattype == 'map':
+        ending = '.fits'
+    elif stattype == 'cl':
+        ending = '.cl.dat'
+    elif stattype == 'ct':
+        ending = '.ct.dat'
+    elif stattype == 'lvmap':
+        ending = '.{0:s}.fits'.format(extratag)
+    elif stattype == 'statsummary':
+        ending = '.stats.dat'
+    elif stattype == 'Rall':
+        ending = '.Rall.dat'
+    elif stattype == 'Rall-contours':
+        ending = '.Rall-contours.dat'
+    elif stattype == 'Rall-contours-singletail':
+        ending = '.Rall-contours-singletail.dat'
+    elif stattype == 'Rall-contours-hist':
+        ending = '.Rall-contours-hist.dat'
+    if maskname:
+        maskstr = '-'+maskname
+    else:
+        maskstr = ''
+    return ''.join([datadir,mapbase, '_', str(nside), '_', maskstr,'_{0:d}'.format(number), ending])
 
 # Taken from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer
 def get_ALV_onemap_externalmean(datadir, mapbase, meanmapfile, varmapfile, lvmapdir = '', maskfile='', maskname='', disksizedeg = 8, NSIDELV = 16, overwrite = False):
