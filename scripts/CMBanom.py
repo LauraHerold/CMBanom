@@ -2,6 +2,7 @@
 import numpy as np
 import healpy as hp
 import scipy
+import polymv
 
 # File locations
 ## Theory Cl file used to generate simulations
@@ -84,6 +85,11 @@ def get_cl_wf_factor(Nside, deg=None, lmax=384):
     pixwin = hp.pixwin(Nside)[:lmax]
     beam = hp.sphtfunc.gauss_beam(fwhm=deg_rad, lmax=lmax-1)
     return 1./pixwin**2/beam**2
+
+def read_masks(dir_mask, names_mask, Nside):
+    masks = np.ones((3, hp.nside2npix(Nside)))
+    for m in range(len(names_mask)): masks[m+1] = hp.read_map(dir_mask+names_mask[m])
+    return masks
             
 
 def pval_lower(val_real, vals_sims):
@@ -252,7 +258,7 @@ def tabulate_Ifunc(x,LMAX):
 # Parity asymmetry
 ##################################################################
 
-def load_cls(fn_cls, name_mask, Nsims, cl_wf_factor):
+def load_cls(fn_cls, name_mask, Nsims, cl_wf_factor=1.):
     cls = np.array([np.loadtxt(fn_cls+f'cl_{name_mask}__{n}.txt').T[1] for n in range(Nsims)])*cl_wf_factor
     return cls
 
@@ -287,7 +293,36 @@ def sigma_16(map, mask):
 ##################################################################
 # Multipole alignments, S_QO
 ##################################################################
+
+def compute_MVs(maps, mask, lmax):
+
+    # Compute alms                                                                                                               
+    alms = [hp.sphtfunc.map2alm(maps[n]*mask, lmax) for n in range(len(maps))]
+
+    # Compute MVs with polymv
+    mvs = []
+    for n in range(len(maps)):
+        mvs_all = [polymv.mvs.m_vectors(alms[n], ell) for ell in range(lmax+1)]
+        mvs.append([polymv.otherfuncs.mvs_north(mvs_all[ell]) for ell in range(lmax+1)])
+    return mvs
     
+                
+def compute_Ws(mvs, lmax):
+    ws = []
+    for n in range(len(mvs)):
+        ws_n = [0,0]
+        for l in range(2,lmax+1):
+            ws_l = []
+            for i in range(len(mvs[n][l])-1):
+                mv1 = polymv.otherfuncs.to_cart(mvs[n][l])[i]
+                for j in range(i+1, len(mvs[n][l])):
+                    mv2 = polymv.otherfuncs.to_cart(mvs[n][l])[j]
+                    ws_l.append(np.cross(mv1, mv2))
+            ws_n.append(ws_l)
+        ws.append(ws_n)
+    return ws
+
+
 def S_QO(ws):
     S = 0
     for i in range(3):
