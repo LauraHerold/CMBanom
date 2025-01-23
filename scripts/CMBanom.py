@@ -2,7 +2,7 @@
 import numpy as np
 import healpy as hp
 import scipy
-import polymv
+#import polymv
 
 # File locations
 ## Theory Cl file used to generate simulations
