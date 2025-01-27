@@ -1,12 +1,12 @@
 #!/bin/bash                                                                                                                                                                     
-NMIN=0
-NMAX=10000
+NMIN=10000
+NMAX=20000
 OUTDIR="/tank/NoBackup/lherold"
 # Full sky
-MASKFILE="None"
+#MASKFILE="None"
 # Common mask
-##MASKFILE="../data/masks/common-Mask-Int_cutoff0.9_Nside128.fits"
-##MASKLABEL="commask"
+MASKFILE="../data/masks/common-Mask-Int_cutoff0.9_Nside128.fits"
+MASKLABEL="commask"
 # Std. mask
 ##MASKFILE="../data/masks/stdv_mask_1percent.fits_v3.fits"
 ##MASKLABEL="stdmask"
