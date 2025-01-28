@@ -1,15 +1,15 @@
 #!/bin/bash                                                                                                                                                                     
-NMIN=10000
-NMAX=20000
+NMIN=30000
+NMAX=100000
 OUTDIR="/tank/NoBackup/lherold"
 # Full sky
 #MASKFILE="None"
 # Common mask
-MASKFILE="../data/masks/common-Mask-Int_cutoff0.9_Nside128.fits"
-MASKLABEL="commask"
+#MASKFILE="../data/masks/common-Mask-Int_cutoff0.9_Nside128.fits"
+#MASKLABEL="commask"
 # Std. mask
-##MASKFILE="../data/masks/stdv_mask_1percent.fits_v3.fits"
-##MASKLABEL="stdmask"
+MASKFILE="../data/masks/stdv_mask_1percent_v4.fits"
+MASKLABEL="stdmask"
 
 if [[ "$MASKFILE" == "None" ]]; then
     for N in `seq $NMIN $NMAX`; do

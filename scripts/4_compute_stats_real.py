@@ -17,9 +17,8 @@ fn_Smu = "../data/stats/"
 fn_mask = "../data/masks/"
 
 # full sky, common mask, std. mask
-
 mask_labels = ["fullsky", "commask", "stdmask"]
-names_mask = [None, "common-Mask-Int_cutoff0.9_Nside128.fits", "stdv_mask_1percent_cutoff0.9_Nside128.fits"]
+names_mask = [None, "common-Mask-Int_cutoff0.9_Nside128.fits", "stdv_mask_1percent_v4.fits"]
 
 # Planck maps full resolution
 #fn_maps = "/tank/data/planck/"
