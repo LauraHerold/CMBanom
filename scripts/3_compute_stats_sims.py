@@ -9,8 +9,8 @@ import CMBanom
 Nsims     = 100000
 Nside_in  = 128
 maps_dir  = "/tank/NoBackup/lherold/maps_100k/" 
-corrs_dir = "/tank/NoBackup/lherold/sims/"
-cls_dir   = "/tank/NoBackup/lherold/sims/"
+corrs_dir = "/tank/NoBackup/lherold/"
+cls_dir   = "/tank/NoBackup/lherold/"
 masks_dir = "../data/masks/"
 stats_dir = "../data/stats/"
 names_mask = ["fullsky", "stdmask", "commask"]
@@ -20,7 +20,7 @@ mask_files = ["stdv_mask_1percent_v4.fits", "common-Mask-Int_cutoff0.9_Nside128.
 compute_envelopes = False
 
 ## Low correlation, Smu
-compute_Smu = False
+compute_Smu = True
 summation = True
 mu = 0.5
 
@@ -31,10 +31,13 @@ lmax_R = 60
 # Hemispherical asymmetry, sigma16
 compute_sigma16 = False
 ecliptic_coords = True
-mask_dir_south_ecl = "mask_south_ecl_Nside16.fits"
+if compute_sigma16:
+    mask_dir_south_ecl = "mask_south_ecl_Nside16.fits"
+    mask_files = ["stdv_mask_1percent_cutoff0.9_Nside16.fits", "common-Mask-Int_cutoff0.9_Nside16.fits"]
+
 
 # Quadrupole-octopole alignment, SQO
-compute_SQO = True
+compute_SQO = False
 
 
 if compute_Smu:
@@ -42,9 +45,9 @@ if compute_Smu:
     for m in range(len(names_mask)):
         name_mask = names_mask[m]
         print(name_mask, "...")
-
+        
         # Load corrs
-        theta, cos_theta, corrs = CMBanom.load_corrs(corrs_dir, name_mask, Nsims)
+        theta, cos_theta, corrs = CMBanom.load_corrs(corrs_dir+f"corrs_{name_mask}_100k/", name_mask, Nsims)
 
         # Compute & save Smu
         S_mu = CMBanom.S_mu_many(corrs, cos_theta, mu, summation=summation)
@@ -59,7 +62,7 @@ if compute_R:
 
         # Load Cls (correcting for pixel window fct. & beam)
         cl_wf_factor = CMBanom.get_cl_wf_factor(Nside_in)
-        cls = CMBanom.load_cls(cls_dir, name_mask, Nsims, cl_wf_factor)
+        cls = CMBanom.load_cls(cls_dir+f"cls_{name_mask}_100k/", name_mask, Nsims, cl_wf_factor)
 
         # Compute and save R
         R = np.array([[CMBanom.get_Rassymstat(cls[n], lmax=l) for l in range(lmax_R)] for n in range(Nsims)])
