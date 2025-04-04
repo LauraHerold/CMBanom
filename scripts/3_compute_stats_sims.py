@@ -77,7 +77,7 @@ if compute_sigma16:
     if ecliptic_coords: mask_for_north = hp.read_map(masks_dir+mask_dir_south_ecl)
     else: mask_for_north = np.append(np.ones(len_mask_16/2), np.zeros(len_mask_16/2))
     masks_01 = CMBanom.read_masks(masks_dir, mask_files, Nside_out)
-    masks = np.where(np.array([mask*mask_for_north for mask in masks_01]), np.nan, 1)
+    masks = np.where(np.array([mask*mask_for_north for mask in masks_01])==0, np.nan, 1)
 
     # Read maps                                                                                                               
     print("Downgrading maps")

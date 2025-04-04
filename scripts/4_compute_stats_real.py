@@ -18,10 +18,10 @@ Nmasks = len(names_mask)
 Nmaps = len(names_maps)
 
 # Modes
-compute_Smu       = True 
-compute_R         = False #not implemented
+compute_Smu       = False
+compute_R         = False
 compute_sigma16   = False
-compute_SQO       = False #not implemented
+compute_SQO       = True
 
 ## Low correlation, Smu
 summation = True
@@ -60,13 +60,18 @@ if compute_R:
         name_mask = names_mask[m]
         print(name_mask, "...")
 
-        # Load Cls (correcting for pixel window fct. & beam)
-        cl_wf_factor = CMBanom.get_cl_wf_factor(Nside_in)
-        cls = CMBanom.load_cls(cls_dir+f"cls_{name_mask}_100k/", name_mask, Nsims, cl_wf_factor)
+        # Load Planck Cl (begins with l=0) and correct window fcts. and units, shape: (Nmasks, Nmaps, lmax)
+        cl_wf_128  = CMBanom.get_cl_wf_factor(Nside_in)
+        cl_wf_1deg = CMBanom.get_cl_wf_factor(Nside_in, deg=1)
+        #cls = CMBanom.load_cls(cls_dir+f"cls_{name_mask}_100k/", name_mask, Nsims, cl_wf_factor)
+        cls = np.array([np.loadtxt(real_dir+f"cl_{names_real[n]}_{names_mask[m]}.txt").T[1] for n in range(Nmaps)])
+        for m in range(Nmasks):
+            cls[:4] *= cl_wf_128
+            cls[4:] *= 1e6*cl_wf_1deg
 
         # Compute and save R
-        R = np.array([[CMBanom.get_Rassymstat(cls[n], lmax=l) for l in range(lmax_R)] for n in range(Nsims)])
-        np.savetxt(stats_dir+f'R_sims_{name_mask}_Nsims_{Nsims}.npy', R)
+        R = np.array([[CMBanom.get_Rassymstat(cls[n], lmax=l) for l in range(lmax_R)] for n in range(Nmaps)])
+        np.savetxt(stats_dir+f'R_real_{name_mask}.npy', R)
 
 if compute_sigma16:
     Nside_out = 16
@@ -77,7 +82,7 @@ if compute_sigma16:
     if ecliptic_coords: mask_for_north = hp.read_map(masks_dir+mask_dir_south_ecl)
     else: mask_for_north = np.append(np.ones(len_mask_16/2), np.zeros(len_mask_16/2))
     masks_01 = CMBanom.read_masks(masks_dir, mask_files, Nside_out)
-    masks = np.where(np.array([mask*mask_for_north for mask in masks_01]), np.nan, 1)
+    masks = np.where(np.array([mask*mask_for_north for mask in masks_01])==0, np.nan, 1)
 
     # Read maps
     print("Downgrading maps")
@@ -103,8 +108,9 @@ if compute_SQO:
     masks = CMBanom.read_masks(masks_dir, mask_files, Nside_in)
 
     # Load maps
-    maps = [hp.read_map(maps_dir+f"map__{n}.fits")*1e3 for n in range(Nsims)]
-
+    maps = [hp.read_map(real_dir+f"map_{names_maps[n]}.fits") for n in range(Nmaps)]
+    maps[4:] = [map * 1.e3 for map in maps[4:]] # Convert units to muK   
+    
     for m in range(len(names_mask)):
         mask = masks[m]
         name_mask = names_mask[m]
@@ -117,6 +123,6 @@ if compute_SQO:
         ws = CMBanom.compute_Ws(mvs, lmax_QO)
 
         print("- Computing SQO")
-        SQO = np.array([CMBanom.S_QO(ws[n]) for n in range(Nsims)])
-        np.savetxt(stats_dir+f'SQO_sims_{name_mask}_Nsims_{Nsims}.npy', SQO)
+        SQO = np.array([CMBanom.S_QO(ws[n]) for n in range(Nmaps)])
+        np.savetxt(stats_dir+f'SQO_real_{name_mask}.npy', SQO)
 
