@@ -19,9 +19,9 @@ mask_files = ["stdv_mask_1percent_v4.fits", "common-Mask-Int_cutoff0.9_Nside128.
 # Modes
 compute_Smu       = False
 compute_R         = False
-compute_sigma16   = False
+compute_sigma16   = True
 compute_SQO       = False
-compute_envelopes = True
+compute_envelopes = False
 
 ## Cl's and corr's function
 percentiles = True
@@ -83,7 +83,6 @@ if compute_sigma16:
     print("Downgrading maps")
     maps_128 = [hp.read_map(maps_dir+f"map__{n}.fits") for n in range(Nsims)]
     maps_16  = [CMBanom.downgrade_map(map, Nside_out) for map in maps_128]
-
                                                                                                      
     print("Computing sigma_16")
     for m in range(len(names_mask)):

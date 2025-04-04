@@ -1,85 +1,122 @@
-import os
 import numpy as np
+import healpy as hp
 import matplotlib.pyplot as plt
 import scipy.integrate as integrate
 from scipy.interpolate import UnivariateSpline
-import healpy as hp
 import CMBanom
 
 # Parameters
-mu = 0.5
-compute_cl_corr = True
-compute_Smu = False
+Nside_in  = 128
+real_dir  = "../data/real/"
+masks_dir = "../data/masks/"
+stats_dir = "../data/stats/"
+names_mask = ["fullsky", "stdmask", "commask"]
+mask_files = ["stdv_mask_1percent_v4.fits", "common-Mask-Int_cutoff0.9_Nside128.fits"]
+names_maps = ["commander_nside_128", "nilc_nside_128", "sevem_nside_128", "smica_nside_128", "cleaned_70GHz_v4", "cleaned_94GHz_v4", "cleaned_100GHz_v4", "cleaned_143GHz_v4"]
+names_real = ["commander", "nilc", "sevem", "smica", "v4_70GHz", "v4_94GHz", "v4_100GHz", "v4_143GHz"] 
+Nmasks = len(names_mask)
+Nmaps = len(names_maps)
+
+# Modes
+compute_Smu       = True 
+compute_R         = False #not implemented
+compute_sigma16   = False
+compute_SQO       = False #not implemented
+
+## Low correlation, Smu
 summation = True
-save_downgrade = False
-fn_real = "../data/real/"
-fn_Smu = "../data/stats/"
-fn_mask = "../data/masks/"
+mu = 0.5
 
-# full sky, common mask, std. mask
-mask_labels = ["fullsky", "commask", "stdmask"]
-names_mask = [None, "common-Mask-Int_cutoff0.9_Nside128.fits", "stdv_mask_1percent_v4.fits"]
+# Parity asymmetry, R
+lmax_R = 60
 
-# Planck maps full resolution
-#fn_maps = "/tank/data/planck/"
-#names_map = ["planck_pr3/COM_CMB_IQU-smica_2048_R3.00_full.fits", "planck_pr3/COM_CMB_IQU-commander_2048_R3.00_full.fits", "planck_pr3/COM_CMB_IQU-nilc_2048_R3.00_full.fits", "planck_pr3/COM_CMB_IQU-sevem_2048_R3.01_full.fits", "planck_pr2/COM_CMB_IQU-commander_1024_R2.02_full.fits", "planck_pr2/COM_CMB_IQU-nilc-field-Int_2048_R2.01_full.fits", "planck_pr2/COM_CMB_IQU-sevem-field-Int_2048_R2.01_full.fits", "planck_pr2/COM_CMB_IQU-smica-field-Int_2048_R2.00.fits"]
-#labels = ["smica_2048", "commander_2048", "nilc_2048", "sevem_2048", "commander_pr2_2048", "nilc_pr2_2048", "sevem_pr2_2048", "smica_pr2_2048"]
+# Hemispherical asymmetry, sigma16
+ecliptic_coords = True
 
-# All maps Nside=128
-fn_maps = "../data/maps/"
-names_map = ["map_commander_nside_128.fits", "map_nilc_nside_128.fits", "map_sevem_nside_128.fits", "map_smica_nside_128.fits", "map_cleaned_70GHz_v3.fits", "map_cleaned_94GHz_v3.fits", "map_cleaned_100GHz_v3.fits", "map_cleaned_143GHz_v3.fits"]
-map_labels = ["commander", "nilc", "sevem", "smica", "70GHz", "94GHz", "100GHz", "143GHz"]
+if compute_sigma16:
+    mask_dir_south_ecl = "mask_south_ecl_Nside16.fits"
+    mask_files = ["stdv_mask_1percent_cutoff0.9_Nside16.fits", "common-Mask-Int_cutoff0.9_Nside16.fits"]
 
-for i in range(len(names_map)):
-    name_map = names_map[i]
+if compute_Smu:
+    print("Computing Smu:")
+    for m in range(len(names_mask)):
+        name_mask = names_mask[m]
+        print(name_mask, "...")
 
-    for j in range(len(names_mask)):
-        name_mask = names_mask[j]
+        # Load corrs
+        #theta, cos_theta, corrs = CMBanom.load_corrs(corrs_dir+f"corrs_{name_mask}_100k/", name_mask, Nsims)
+        theta, cos_theta = np.loadtxt(real_dir+f"corr_{names_real[0]}_{name_mask}.txt").T[:2]
+        corrs = np.array([np.loadtxt(real_dir+f"corr_{names_real[n]}_{name_mask}.txt").T[2] for n in range(Nmaps)])
+        corrs[4:] *= 1e6
 
-        if compute_cl_corr:
-            os.system('echo "Computing power spectra and correlation functions"')
-            name_corr = 'corr_'+map_labels[i]+'_'+mask_labels[j]+'.txt'
-            name_pcl = 'cl_'+map_labels[i]+'_'+mask_labels[j]+'.txt'
+        # Compute & save Smu
+        S_mu = CMBanom.S_mu_many(corrs, cos_theta, mu, summation=summation)
+        np.savetxt(stats_dir+f'Smu_real_{name_mask}.npy', S_mu)
+
         
-            if name_mask==None:
-                os.system('spice -mapfile '+fn_real+name_map+'  -corfile '+fn_real+name_corr+' -clfile '+fn_real+name_pcl)
-            else:
-                os.system('spice -mapfile '+fn_real+name_map+' -maskfile '+fn_mask+name_mask+'  -corfile '+fn_real+name_corr+' -clfile '+fn_real+name_pcl)
-                
+if compute_R:
+    print("Computing R:")
+    for m in range(len(names_mask)):
+        name_mask = names_mask[m]
+        print(name_mask, "...")
 
-        if compute_Smu:
-            os.system('echo "Computing Smu from real maps"')
-    
-            #C_theta = 1e12*np.loadtxt(fn_corr+name_corr).T[2]
-            C_theta = 1e6*np.loadtxt(fn_corr+name_corr).T[2] 
-            theta = np.loadtxt(fn_corr+name_corr).T[0]
-            cos_theta = np.loadtxt(fn_corr+name_corr).T[1]
-            dtheta = np.append(theta[:-1] - theta[1:], np.zeros(1))
-            dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
-    
-            if summation:
-                index_mu = np.nonzero(cos_theta>mu)[0][0]-1
-                C_theta_mu = np.zeros(len(C_theta))
-                C_theta_mu[:index_mu] = C_theta[:index_mu]
-                S_mu = np.sum(C_theta_mu**2*dcos_theta)
+        # Load Cls (correcting for pixel window fct. & beam)
+        cl_wf_factor = CMBanom.get_cl_wf_factor(Nside_in)
+        cls = CMBanom.load_cls(cls_dir+f"cls_{name_mask}_100k/", name_mask, Nsims, cl_wf_factor)
 
-            else:
-                C_theta_int = UnivariateSpline(cos_theta, C_theta**2)
-                S_mu = integrate.quad(C_theta_int, -1, mu)[0]
+        # Compute and save R
+        R = np.array([[CMBanom.get_Rassymstat(cls[n], lmax=l) for l in range(lmax_R)] for n in range(Nsims)])
+        np.savetxt(stats_dir+f'R_sims_{name_mask}_Nsims_{Nsims}.npy', R)
 
-            # Save Smu                          
-            if mask:
-                np.savetxt(fn_Smu+"Smu_"+mask_label+"_"+label+".npy", np.array([S_mu]))
-                print("Saved Smu for "+label+" as "+fn_Smu+"Smu_"+mask_label+"_"+label+".npy")
-            else:
-                np.savetxt(fn_Smu+"Smu_"+label+".npy", np.array([S_mu]))
-                print("Saved Smu for "+label+" as "+fn_Smu+"Smu_"+label+".npy")
+if compute_sigma16:
+    Nside_out = 16
+    len_mask_16 = 3072
+    print("Computing sigma_16:")
 
+    # Load masks and convert zeros to nans
+    if ecliptic_coords: mask_for_north = hp.read_map(masks_dir+mask_dir_south_ecl)
+    else: mask_for_north = np.append(np.ones(len_mask_16/2), np.zeros(len_mask_16/2))
+    masks_01 = CMBanom.read_masks(masks_dir, mask_files, Nside_out)
+    masks = np.where(np.array([mask*mask_for_north for mask in masks_01]), np.nan, 1)
 
-# Save downgraded maps                                                                                                           
-if save_downgrade == True:
-    for i in range(len(names_map)):
-        highres_map = hp.read_map(fn_maps+names_map[i])
-        lowres_map = CMBanom.downgrade_map(highres_map, NSIDEout=128)
-        hp.write_map(fn_real+labels[i]+"_nside_128.fits", lowres_map)
-    exit()
+    # Read maps
+    print("Downgrading maps")
+    maps_128 = [hp.read_map(real_dir+f"map_{name}.fits") for name in names_maps]
+    maps_128[4:] = [map * 1.e3 for map in maps_128[4:]] # Convert units to muK
+    maps_16  = [CMBanom.downgrade_map(map, Nside_out) for map in maps_128]
+
+    print("Computing sigma_16")
+    for m in range(len(names_mask)):
+        mask = masks[m]
+        name_mask = names_mask[m]
+        print("-", name_mask, "...")
+
+        # Compute & save sigma_16
+        sigma16 = [CMBanom.sigma_16(map, mask) for map in maps_16]
+        np.savetxt(stats_dir+f'sigma16_real_{name_mask}.npy', sigma16)
+
+if compute_SQO:
+    lmax_QO = 3
+    print("Computing SQO:")
+
+    # Load masks
+    masks = CMBanom.read_masks(masks_dir, mask_files, Nside_in)
+
+    # Load maps
+    maps = [hp.read_map(maps_dir+f"map__{n}.fits")*1e3 for n in range(Nsims)]
+
+    for m in range(len(names_mask)):
+        mask = masks[m]
+        name_mask = names_mask[m]
+        print(name_mask, "...")
+
+        print("- Computing multipole vectors")
+        mvs = CMBanom.compute_MVs(maps, mask, lmax_QO)
+
+        print("- Computing oriented-area vectors")
+        ws = CMBanom.compute_Ws(mvs, lmax_QO)
+
+        print("- Computing SQO")
+        SQO = np.array([CMBanom.S_QO(ws[n]) for n in range(Nsims)])
+        np.savetxt(stats_dir+f'SQO_sims_{name_mask}_Nsims_{Nsims}.npy', SQO)
+
