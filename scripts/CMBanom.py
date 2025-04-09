@@ -80,10 +80,10 @@ def gen_maps_from_cls(cldatfile=cldatfile, outdir=outdir_simmaps, Nside=NSIDEfid
 
 
 def get_cl_wf_factor(Nside, deg=None, lmax=384):
-    if deg == None: deg = NSIDEtoFWHMarcmin[Nside]/60.
-    deg_rad = deg*np.pi/180.
-    pixwin = hp.pixwin(Nside)[:lmax]
-    beam = hp.sphtfunc.gauss_beam(fwhm=deg_rad, lmax=lmax-1)
+    if deg == None: deg = NSIDEtoFWHMarcmin[Nside]/60.       # arcmin to degree
+    deg_rad = deg*np.pi/180.                                 # degree to radians
+    pixwin = hp.pixwin(Nside)[:lmax]                         # pixwin takes Nside
+    beam = hp.sphtfunc.gauss_beam(fwhm=deg_rad, lmax=lmax-1) # gauss_beam takes fwhm in radians
     return 1./pixwin**2/beam**2
 
 def read_masks(dir_mask, names_mask, Nside):
