@@ -26,8 +26,8 @@ def arcmin2rad(angle):
     return angle*np.pi/(60.*180.)
 
 
-# Taken from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer
-def downgrade_map(inmap, NSIDEout):
+# Adapated from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer
+def downgrade_map(inmap, NSIDEout, DEGin=None, DEGout=None):
     """
     Downgrades map, scaling by appropriate beam and pixel window
     functions, as discussed in Planck isotropy paper.
@@ -38,9 +38,11 @@ def downgrade_map(inmap, NSIDEout):
     #print("lmax: ", lmax)
     NSIDEin = hp.get_nside(inmap)
     plin = hp.sphtfunc.pixwin(NSIDEin)[:lmax+1]
-    fwhmin = arcmin2rad(NSIDEtoFWHMarcmin[NSIDEin])
+    if DEGin == None: DEGin = NSIDEtoFWHMarcmin[Nside]/60.      # Use Planck smoothing convention arXiv:1506.07135 (arcmin to degree)
+    fwhmin = DEGin*np.pi/180.                                   # degree to radians  
+    if DEGout == None: DEGout = NSIDEtoFWHMarcmin[Nside]/60.    # arcmin to degree
+    fwhmout = DEGout*np.pi/180.                                 # degree to radians
     blin = hp.sphtfunc.gauss_beam(fwhmin,lmax=lmax)
-    fwhmout = arcmin2rad(NSIDEtoFWHMarcmin[NSIDEout])
     blout = hp.sphtfunc.gauss_beam(fwhmout,lmax=lmax)
     multby = blout*plout/(blin*plin) #one number per ell
 
