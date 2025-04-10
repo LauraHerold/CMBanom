@@ -3,6 +3,7 @@ import healpy as hp
 import matplotlib.pyplot as plt
 import scipy.integrate as integrate
 from scipy.interpolate import UnivariateSpline
+import os
 import CMBanom
 
 # Parameters
@@ -12,16 +13,19 @@ masks_dir = "../data/masks/"
 stats_dir = "../data/stats/"
 names_mask = ["fullsky", "stdmask", "commask"]
 mask_files = ["stdv_mask_1percent_v4.fits", "common-Mask-Int_cutoff0.9_Nside128.fits"]
-names_maps = ["commander_nside_128", "nilc_nside_128", "sevem_nside_128", "smica_nside_128", "cleaned_70GHz_v4", "cleaned_94GHz_v4", "cleaned_100GHz_v4", "cleaned_143GHz_v4"]
-names_real = ["commander", "nilc", "sevem", "smica", "v4_70GHz", "v4_94GHz", "v4_100GHz", "v4_143GHz"] 
+names_maps = ["commander_nside_128_1deg", "nilc_nside_128_1deg", "sevem_nside_128_1deg", "smica_nside_128_1deg", "cleaned_70GHz_focused", "cleaned_94GHz_focused", "cleaned_100GHz_focused", "cleaned_143GHz_focused"]
+#names_maps = ["commander_zodi_removed_L", "nilc_zodi_removed_L", "sevem_zodi_removed_L", "smica_zodi_removed_L", "cleaned_70GHz_focused", "cleaned_94GHz_focused", "cleaned_100GHz_focused", "cleaned_143GHz_focused"]
+names_real = ["commander_1deg", "nilc_1deg", "sevem_1deg", "smica_1deg", "focused_70GHz", "focused_94GHz", "focused_100GHz", "focused_143GHz"]
+#names_real = ["commander_zodi_removed", "nilc_zodi_removed", "sevem_zodi_removed", "smica_zodi_removed", "focused_70GHz", "focused_94GHz", "focused_100GHz", "focused_143GHz"] 
 Nmasks = len(names_mask)
 Nmaps = len(names_maps)
 
 # Modes
-compute_Smu       = False
-compute_R         = False
-compute_sigma16   = False
-compute_SQO       = True
+compute_cl_corr = True
+compute_Smu     = False
+compute_R       = False
+compute_sigma16 = False
+compute_SQO     = False
 
 ## Low correlation, Smu
 summation = True
@@ -32,6 +36,25 @@ lmax_R = 60
 
 # Hemispherical asymmetry, sigma16
 ecliptic_coords = True
+
+##### Compute stats
+
+if compute_cl_corr:
+    print("Computing Cls and corrs")
+    for i in range(Nmaps):
+        fn_map = f"{real_dir}map_{names_maps[i]}.fits"
+
+        for j in range(Nmasks):
+            fn_corr = f'{real_dir}corr_{names_real[i]}_{names_mask[j]}.txt'
+            fn_pcl  = f'{real_dir}cl_{names_real[i]}_{names_mask[j]}.txt'
+
+            if j==0:
+                print("-fullsky")
+                os.system(f'spice -mapfile {fn_map} -corfile {fn_corr} -clfile {fn_pcl}')
+            else:
+                print(names_mask[j])
+                fn_mask = f"{masks_dir}{mask_files[j-1]}"
+                os.system(f'spice -mapfile {fn_map} -maskfile {fn_mask} -corfile {fn_corr} -clfile {fn_pcl}')
 
 if compute_sigma16:
     mask_dir_south_ecl = "mask_south_ecl_Nside16.fits"
