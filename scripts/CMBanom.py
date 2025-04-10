@@ -38,9 +38,9 @@ def downgrade_map(inmap, NSIDEout, DEGin=None, DEGout=None):
     #print("lmax: ", lmax)
     NSIDEin = hp.get_nside(inmap)
     plin = hp.sphtfunc.pixwin(NSIDEin)[:lmax+1]
-    if DEGin == None: DEGin = NSIDEtoFWHMarcmin[Nside]/60.      # Use Planck smoothing convention arXiv:1506.07135 (arcmin to degree)
+    if DEGin == None: DEGin = NSIDEtoFWHMarcmin[NSIDEin]/60.      # Use Planck smoothing convention arXiv:1506.07135 (arcmin to degree)
     fwhmin = DEGin*np.pi/180.                                   # degree to radians  
-    if DEGout == None: DEGout = NSIDEtoFWHMarcmin[Nside]/60.    # arcmin to degree
+    if DEGout == None: DEGout = NSIDEtoFWHMarcmin[NSIDEout]/60.    # arcmin to degree
     fwhmout = DEGout*np.pi/180.                                 # degree to radians
     blin = hp.sphtfunc.gauss_beam(fwhmin,lmax=lmax)
     blout = hp.sphtfunc.gauss_beam(fwhmout,lmax=lmax)
