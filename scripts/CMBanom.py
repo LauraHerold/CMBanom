@@ -369,7 +369,7 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
     return lvmap
 
 def ALV(lvmap, lvmaps_sims, lvmask):
-    
+    
     mean_lvmap = np.mean(lvmaps_sims, axis=0)
     var_lvmap = np.var(lvmaps_sims, axis=0)/mean_lvmap**2
     meanvar_lvmap = np.nanmean(var_lvmap*lvmask)
