@@ -352,7 +352,7 @@ def get_lvmask(pixlist, theta_deg, frac_to_be_masked, Nside_in, Nside_out):
     Npix_out = hp.nside2npix(Nside_out)
     fracunmasked = np.array([float(pixlist[i].size)/float(hp.query_disc(nside=Nside_in, vec=hp.pix2vec(Nside_out, i), radius=np.deg2rad(theta_deg)).size) for i in range(Npix_out)])
     lvmask = (fracunmasked > frac_to_be_masked).astype(bool)
-    lvmask = np.where(fracunmasked > frac_to_be_masked, 1, np.NaN)
+    #lvmask = np.where(fracunmasked > frac_to_be_masked, 1, np.NaN)
     
     return lvmask
 
@@ -371,7 +371,9 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
 def ALV(lvmap, lvmaps_sims, lvmask):
     
     mean_lvmap = np.mean(lvmaps_sims, axis=0)
-    normlvmap = (lvmap - mean_lvmap)/mean_lvmap
+    var_lvmap = np.var(lvmaps_sims, axis=0)/mean_lvmap**2
+    meanvar_lvmap = np.nanmean(var_lvmap*lvmask)
+    normlvmap = (meanvar_lvmap/var_lvmap)*(lvmap - mean_lvmap)/mean_lvmap
     normlvmap = hp.ma(normlvmap)
     normlvmap.mask = np.logical_not(lvmask)
     dipolevec = hp.remove_dipole(normlvmap, fitval = True)[2]
@@ -381,7 +383,9 @@ def ALV(lvmap, lvmaps_sims, lvmask):
 
 def ALV_vec(lvmap, lvmaps_sims, lvmask):
     mean_lvmap = np.mean(lvmaps_sims, axis=0)
-    normlvmap = (lvmap - mean_lvmap)/mean_lvmap
+    var_lvmap = np.var(lvmaps_sims, axis=0)/mean_lvmap**2
+    meanvar_lvmap = np.nanmean(var_lvmap*lvmask)
+    normlvmap = (meanvar_lvmap/var_lvmap)*(lvmap - mean_lvmap)/mean_lvmap
     normlvmap = hp.ma(normlvmap)
     normlvmap.mask = np.logical_not(lvmask)
     dipolevec = hp.remove_dipole(normlvmap, fitval = True)[2]
