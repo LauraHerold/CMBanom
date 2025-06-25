@@ -6,7 +6,7 @@ from scipy.interpolate import UnivariateSpline
 import CMBanom
 
 # Parameters                                                                                                              
-Nsims     = 100000
+Nsims     = 100 #000
 Nside_in  = 128
 maps_dir  = "/tank/NoBackup/lherold/maps_100k/" 
 corrs_dir = "/tank/NoBackup/lherold/"
@@ -15,13 +15,15 @@ masks_dir = "../data/masks/"
 stats_dir = "../data/stats/"
 names_mask = ["fullsky", "stdmask", "commask"]
 mask_files = ["stdv_mask_1percent_v4.fits", "common-Mask-Int_cutoff0.9_Nside128.fits"]
+Nmasks     = len(names_mask)
 
 # Modes
 compute_Smu       = False
 compute_R         = False
-compute_sigma16   = True
+compute_sigma16   = False
 compute_SQO       = False
 compute_envelopes = False
+compute_ALV       = True
 
 ## Cl's and corr's function
 percentiles = True
@@ -33,15 +35,20 @@ mu = 0.5
 # Parity asymmetry, R
 lmax_R = 60
 
-# Hemispherical asymmetry, sigma16
+# Low northern variance, sigma16
 ecliptic_coords = True
 if compute_sigma16:
     mask_dir_south_ecl = "mask_south_ecl_Nside16.fits"
     mask_files = ["stdv_mask_1percent_cutoff0.9_Nside16.fits", "common-Mask-Int_cutoff0.9_Nside16.fits"]
 
+# Hemispherical asymmetry, ALV
+theta_deg = 8
+frac_to_be_masked = 0.1
+
+    
 if compute_Smu:
     print("Computing Smu:")
-    for m in range(len(names_mask)):
+    for m in range(Nmasks):
         name_mask = names_mask[m]
         print(name_mask, "...")
         
@@ -55,7 +62,7 @@ if compute_Smu:
         
 if compute_R:
     print("Computing R:")
-    for m in range(len(names_mask)):
+    for m in range(Nmasks):
         name_mask = names_mask[m]
         print(name_mask, "...")
 
@@ -85,7 +92,7 @@ if compute_sigma16:
     maps_16  = [CMBanom.downgrade_map(map, Nside_out) for map in maps_128]
                                                                                                      
     print("Computing sigma_16")
-    for m in range(len(names_mask)):
+    for m in range(Nmasks):
         mask = masks[m]
         name_mask = names_mask[m]
         print("-", name_mask, "...")
@@ -105,7 +112,7 @@ if compute_SQO:
     # Load maps                                                                                                                  
     maps = [hp.read_map(maps_dir+f"map__{n}.fits")*1e3 for n in range(Nsims)]
         
-    for m in range(len(names_mask)):
+    for m in range(Nmasks):
         mask = masks[m]
         name_mask = names_mask[m]
         print(name_mask, "...")
@@ -119,7 +126,42 @@ if compute_SQO:
         print("- Computing SQO")
         SQO = np.array([CMBanom.S_QO(ws[n]) for n in range(Nsims)])
         np.savetxt(stats_dir+f'SQO_sims_{name_mask}_Nsims_{Nsims}.npy', SQO)
-        
+
+
+if compute_ALV:
+    Nside_in  = 128
+    Nside_out = 16
+    Npix_in  = hp.nside2npix(Nside_in)
+    Npix_out = hp.nside2npix(Nside_out)
+    print("Computing ALV:")
+    
+    # Load maps and masks
+    masks = CMBanom.read_masks(masks_dir, mask_files, Nside_in)
+    maps  = [hp.read_map(maps_dir+f"map__{n}.fits") for n in range(Nsims)]
+
+    for m in range(Nmasks):
+        mask = masks[m]
+        name_mask = names_mask[m]
+        print(name_mask, "...")
+
+        print("- Computing pixlists and lvmasks")
+        pixlist = []
+        pixlist = CMBanom.get_pixlist(theta_deg, mask, Nside_in, Nside_out)
+        lvmask  = CMBanom.get_lvmask(pixlist, theta_deg, frac_to_be_masked, Nside_in, Nside_out)
+        lvmask_nan = np.where(lvmask==0, np.nan, 1.)
+
+        print("- Computing LV maps")
+        lvmaps = np.zeros((Nsims, Npix_out))
+        for n in range(Nsims):
+            lvmaps[n] = CMBanom.get_lvmap(maps[n], mask, pixlist, Nside_out)
+
+        print("- Computing ALV")
+        ALV = np.zeros(Nsims)
+        for n in range(Nsims):
+            ALV[n] = CMBanom.ALV(lvmaps[n], lvmaps, lvmask_nan)
+            
+        np.savetxt(stats_dir+f'ALV_sims_{name_mask}_Nsims_{Nsims}.npy', ALV)
+    
 # Compute Cl and corr envelopes
 if compute_envelopes:
     for m in range(len(names_mask)):
