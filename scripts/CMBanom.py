@@ -11,7 +11,8 @@ mask_fn_south_ecl = "../../data/masks/mask_south_ecl_Nside16.fits"
 outdir_simmaps = "../../data/sims/"
 
 #Conversion Nside to FWHMarcmin from Tab. 1 of Planck 2015 Isotropy and Statistics paper arXiv:1506.07135
-NSIDEtoFWHMarcmin = {2048:5, 1024:10, 512:20, 256:40, 128:80, 64:160, 32:320, 16:640}
+#Exception: we smooth Nside=128 to 1 deg = 60 arcmin (Planck col. smoothes to 80 arcmin)
+NSIDEtoFWHMarcmin = {2048:5, 128:60, 64:160, 16:640}
 NSIDEfid = 128
 
 ##################################################################
@@ -35,11 +36,10 @@ def downgrade_map(inmap, NSIDEout, DEGin=None, DEGout=None):
     #get coefficent to covolve with beam and pixel window func
     plout = hp.sphtfunc.pixwin(NSIDEout)
     lmax = plout.size-1
-    #print("lmax: ", lmax)
     NSIDEin = hp.get_nside(inmap)
     plin = hp.sphtfunc.pixwin(NSIDEin)[:lmax+1]
-    if DEGin == None: DEGin = NSIDEtoFWHMarcmin[NSIDEin]/60.      # Use Planck smoothing convention arXiv:1506.07135 (arcmin to degree)
-    fwhmin = DEGin*np.pi/180.                                   # degree to radians  
+    if DEGin == None: DEGin = NSIDEtoFWHMarcmin[NSIDEin]/60.      # Use Planck smoothing convention arXiv:1506.07135 except for Nside=128 (arcmin to degree)
+    fwhmin = DEGin*np.pi/180.                                   # degree to radians
     if DEGout == None: DEGout = NSIDEtoFWHMarcmin[NSIDEout]/60.    # arcmin to degree
     fwhmout = DEGout*np.pi/180.                                 # degree to radians
     blin = hp.sphtfunc.gauss_beam(fwhmin,lmax=lmax)
