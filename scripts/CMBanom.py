@@ -352,7 +352,6 @@ def get_lvmask(pixlist, theta_deg, frac_to_be_masked, Nside_in, Nside_out):
     Npix_out = hp.nside2npix(Nside_out)
     fracunmasked = np.array([float(pixlist[i].size)/float(hp.query_disc(nside=Nside_in, vec=hp.pix2vec(Nside_out, i), radius=np.deg2rad(theta_deg)).size) for i in range(Npix_out)])
     lvmask = (fracunmasked > frac_to_be_masked).astype(bool)
-    #lvmask = np.where(fracunmasked > frac_to_be_masked, 1, np.NaN)
     
     return lvmask
 
@@ -362,14 +361,15 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
     inmap = hp.ma(inmap)
     inmap.mask = np.logical_not(mask)
     inmap = hp.remove_dipole(inmap)
+    inmap_nanmask = np.where(mask==0, np.nan, inmap.data) # avoiding warning: converting a masked element to nan
     
     for i in range(Npix_out):
-        lvmap[i] = np.var(inmap[pixlist[i]])
+        lvmap[i] = np.var(inmap_nanmask[pixlist[i]])
         
     return lvmap
 
 def ALV(lvmap, lvmaps_sims, lvmask):
-    
+
     mean_lvmap = np.mean(lvmaps_sims, axis=0)
     var_lvmap = np.var(lvmaps_sims, axis=0)/mean_lvmap**2
     meanvar_lvmap = np.nanmean(var_lvmap*lvmask)
