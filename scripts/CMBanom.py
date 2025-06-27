@@ -52,12 +52,12 @@ def downgrade_map(inmap, NSIDEout, DEGin=None, DEGout=None):
     outmap = hp.sphtfunc.alm2map(alm,NSIDEout)
     return outmap
 
-
-# Adapted from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer 
+
+# Adapted from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer
 def gen_maps_from_cls(cldatfile=cldatfile, outdir=outdir_simmaps, Nside=NSIDEfid, N_start=0, N_maps=1, lmax=200, regen=True, returnoutf=True):
     """                                                                                                                                    
     Given Cl data filename, desired output file lcoation and name, and some other map properties,                                          
-    generates Nmaps .fits files consistant with input C_ls                                                                              
+    generates Nmaps .fits files consistent with input C_ls                                                                              
     If regen = False, doesn't generate maps, just returns filenames                                                                        
     """
     data = np.loadtxt(cldatfile, skiprows=1)
@@ -70,7 +70,6 @@ def gen_maps_from_cls(cldatfile=cldatfile, outdir=outdir_simmaps, Nside=NSIDEfid
     seeds = np.arange(N_start,N_start+N_maps)
     for seed in seeds:
         np.random.seed(seed)
-        #outf = get_filename_testcase(outdir,'map', Nside, seed,'map')
         outf = outdir+"map__"+str(seed)+".fits"
         if regen:
             m = hp.sphtfunc.synfast(Clist, nside=Nside, fwhm=arcmin2rad(NSIDEtoFWHMarcmin[Nside]), pixwin=True)
