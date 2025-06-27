@@ -52,7 +52,6 @@ def downgrade_map(inmap, NSIDEout, DEGin=None, DEGout=None):
     outmap = hp.sphtfunc.alm2map(alm,NSIDEout)
     return outmap
 
-
 # Adapted from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer
 def gen_maps_from_cls(cldatfile=cldatfile, outdir=outdir_simmaps, Nside=NSIDEfid, N_start=0, N_maps=1, lmax=200, regen=True, returnoutf=True):
     """                                                                                                                                    
