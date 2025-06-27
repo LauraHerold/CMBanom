@@ -2,8 +2,8 @@ import CMBanom
 
 # Parameters
 nside = 128
-N_start = 40000
-N_maps = 60000
+N_start = 0
+N_maps = 100000
 cl_fn = "../data/real/COM_PowerSpect_CMB-base-plikHM-TTTEEE-lowl-lowE-lensing-minimum-theory_R3.01.txt"
 outdir = "/tank/NoBackup/lherold/maps_100k/"
 

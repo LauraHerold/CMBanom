@@ -14,7 +14,7 @@ cls_dir   = "/tank/NoBackup/lherold/"
 masks_dir = "../data/masks/"
 stats_dir = "../data/stats/"
 names_mask = ["fullsky", "stdmask", "commask"]
-mask_files = ["stdv_mask_1percent_v4.fits", "common-Mask-Int_cutoff0.9_Nside128.fits"]
+mask_files = ["stdv_mask_1percent_v7.fits", "com_mask_cutoff_0.9_nside_128.fits"]
 Nmasks     = len(names_mask)
 
 # Modes
@@ -38,8 +38,8 @@ lmax_R = 60
 # Low northern variance, sigma16
 ecliptic_coords = True
 if compute_sigma16:
-    mask_dir_south_ecl = "mask_south_ecl_Nside16.fits"
-    mask_files = ["stdv_mask_1percent_cutoff0.9_Nside16.fits", "common-Mask-Int_cutoff0.9_Nside16.fits"]
+    mask_dir_south_ecl = "mask_south_ecl_nside_16.fits"
+    mask_files = ["stdv_mask_1percent_cutoff_0.9_nside_16.fits", "com_mask_cutoff_0.9_nside_16.fits"]
 
 # Hemispherical asymmetry, ALV
 theta_deg = 8
