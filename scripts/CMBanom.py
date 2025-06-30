@@ -363,14 +363,14 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
     inmap_nanmask = np.where(mask==0, np.nan, inmap.data) # avoiding warning: converting a masked element to nan
     
     for i in range(Npix_out):
-        lvmap[i] = np.var(inmap_nanmask[pixlist[i]])
+        lvmap[i] = np.var(inmap_nanmask[pixlist[i]], ddof=1)
         
     return lvmap
 
 def ALV(lvmap, lvmaps_sims, lvmask):
 
     mean_lvmap = np.mean(lvmaps_sims, axis=0)
-    var_lvmap = np.var(lvmaps_sims, axis=0)/mean_lvmap**2
+    var_lvmap = np.var(lvmaps_sims, axis=0, ddof=1)/mean_lvmap**2
     meanvar_lvmap = np.nanmean(var_lvmap*lvmask)
     normlvmap = (meanvar_lvmap/var_lvmap)*(lvmap - mean_lvmap)/mean_lvmap
     normlvmap = hp.ma(normlvmap)
@@ -382,7 +382,7 @@ def ALV(lvmap, lvmaps_sims, lvmask):
 
 def ALV_vec(lvmap, lvmaps_sims, lvmask):
     mean_lvmap = np.mean(lvmaps_sims, axis=0)
-    var_lvmap = np.var(lvmaps_sims, axis=0)/mean_lvmap**2
+    var_lvmap = np.var(lvmaps_sims, axis=0, ddof=1)/mean_lvmap**2
     meanvar_lvmap = np.nanmean(var_lvmap*lvmask)
     normlvmap = (meanvar_lvmap/var_lvmap)*(lvmap - mean_lvmap)/mean_lvmap
     normlvmap = hp.ma(normlvmap)
