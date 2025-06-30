@@ -285,6 +285,7 @@ def get_Rassymstat(cl,lmax=27,clstartsat=0):
 # Low northern variance, sigma_16
 ##################################################################
     
+# This is \sigma^2_{16}, the variance at Nside = 16
 def sigma_16(map, mask):
     return np.nanvar(map*mask)
     
