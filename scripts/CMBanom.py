@@ -286,7 +286,7 @@ def get_Rassymstat(cl,lmax=27,clstartsat=0):
 ##################################################################
     
 def sigma_16(map, mask):
-    return np.nanstd(map*mask)**2
+    return np.nanvar(map*mask)
     
 ##################################################################
 # Multipole alignments, S_QO
