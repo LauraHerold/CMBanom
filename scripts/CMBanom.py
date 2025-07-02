@@ -363,7 +363,8 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
     inmap_nanmask = np.where(mask==0, np.nan, inmap.data) # avoiding warning: converting a masked element to nan
     
     for i in range(Npix_out):
-        lvmap[i] = np.var(inmap_nanmask[pixlist[i]], ddof=1)
+        #lvmap[i] = np.var(inmap_nanmask[pixlist[i]], ddof=1)
+        if len(pixlist[i])!= 0: lvmap[i] = np.sum(inmap[pixlist[i]]**2)/len(pixlist[i])
         
     return lvmap
 
@@ -379,7 +380,7 @@ def ALV(lvmap, lvmaps_sims, lvmask):
     ALV = np.linalg.norm(dipolevec)
     
     return ALV
-
+ 
 def ALV_vec(lvmap, lvmaps_sims, lvmask):
     mean_lvmap = np.mean(lvmaps_sims, axis=0)
     var_lvmap = np.var(lvmaps_sims, axis=0, ddof=1)/mean_lvmap**2
