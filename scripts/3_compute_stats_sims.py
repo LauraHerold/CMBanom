@@ -6,7 +6,7 @@ from scipy.interpolate import UnivariateSpline
 import CMBanom
 
 # Parameters                                                                                                              
-Nsims     = 100 #000
+Nsims     = 100000
 Nside_in  = 128
 maps_dir  = "/tank/NoBackup/lherold/maps_100k/" 
 corrs_dir = "/tank/NoBackup/lherold/"
@@ -21,12 +21,12 @@ Nmasks     = len(names_mask)
 compute_Smu       = False
 compute_R         = False
 compute_sigma16   = False
-compute_SQO       = False
+compute_SQO       = True
 compute_envelopes = False
-compute_ALV       = True
+compute_ALV       = False
 
 ## Cl's and corr's function
-percentiles = True
+percentiles = False
 
 ## Low correlation, Smu
 summation = True

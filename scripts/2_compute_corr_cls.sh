@@ -3,13 +3,13 @@ NMIN=0
 NMAX=100000
 OUTDIR="/tank/NoBackup/lherold"
 # Full sky
-MASKFILE="None"
+#MASKFILE="None"
 # Common mask
-#MASKFILE="../data/masks/common-Mask-Int_cutoff0.9_Nside128.fits"
+#MASKFILE="../data/masks/com_mask_cutoff_0.9_nside_128.fits"
 #MASKLABEL="commask"
 # Std. mask
-#MASKFILE="../data/masks/stdv_mask_1percent_v7.fits"
-#MASKLABEL="stdmask"
+MASKFILE="../data/masks/stdv_mask_1percent_v7.fits"
+MASKLABEL="stdmask"
 
 if [[ "$MASKFILE" == "None" ]]; then
     for N in `seq $NMIN $NMAX`; do
