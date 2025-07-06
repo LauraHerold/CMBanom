@@ -282,18 +282,14 @@ def get_Rassymstat(cl,lmax=27,clstartsat=0):
     return R
     
 ##################################################################
-# Low northern variance, sigma_16
+# Low northern variance, sigma^2_16
 ##################################################################
     
 # This is \sigma^2_{16}, the variance at Nside = 16
-def sigma_16(map, mask):
-    #return np.nanvar(map*mask)
-    mask_01 = np.where(mask==1., 1., 0.)
-    inmap = hp.ma(map)
-    inmap.mask = np.logical_not(mask_01)
-    inmap = hp.remove_dipole(inmap)
-    sigma_16 = np.nansum((inmap*mask)**2)/len(inmap)
-    return sigma_16
+def sigma2_16(inmap, mask):
+    sigma2_16 = np.nanvar(inmap*mask)
+    #sigma2_16 = np.nansum((inmap*mask)**2)/len(np.nonzero(mask==1.)[0])
+    return sigma2_16
     
 ##################################################################
 # Multipole alignments, S_QO
