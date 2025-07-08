@@ -361,12 +361,13 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
     inmap = hp.ma(inmap)
     inmap.mask = np.logical_not(mask)
     inmap = hp.remove_dipole(inmap)
-    #inmap_nanmask = np.where(mask==0, np.nan, inmap.data) # avoiding warning: converting a masked element to nan
+    inmap_nanmask = np.where(mask==0, np.nan, inmap.data) # avoiding warning: converting a masked element to nan
         
     lvmap = np.zeros(Npix_out)
     for i in range(Npix_out):
         #lvmap[i] = np.var(inmap_nanmask[pixlist[i]])
-        if len(pixlist[i])!= 0: lvmap[i] = np.sum(inmap[pixlist[i]]**2)/len(pixlist[i])
+        #if len(pixlist[i])!= 0: lvmap[i] = np.sum(inmap[pixlist[i]]**2)/len(pixlist[i])
+        if len(pixlist[i])!= 0: lvmap[i] = np.sum((inmap[pixlist[i]]-np.nanmean(inmap_nanmask))**2)/len(pixlist[i])
         
     return lvmap
 
