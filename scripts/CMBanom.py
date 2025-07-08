@@ -338,12 +338,12 @@ def S_QO(ws):
 
 # All inspired by https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer
 def get_pixlist(theta_deg, mask, Nside_in, Nside_out):
-    pixlist = []
     unmasked = np.nonzero(mask)[0]
     Npix_out = hp.nside2npix(Nside_out)
     
+    pixlist = []
     for p in range(Npix_out):
-        alldisk = hp.query_disc(nside=Nside_in, vec=hp.pix2vec(Nside_out, p), radius=np.deg2rad(theta_deg))
+        alldisk = hp.query_disc(nside=Nside_in, vec=hp.pix2vec(Nside_out, p), radius=np.deg2rad(theta_deg), inclusive=True)
         unmaskeddisk = np.intersect1d(alldisk, unmasked, assume_unique=True)
         pixlist.append(unmaskeddisk)
     
@@ -366,8 +366,8 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
     lvmap = np.zeros(Npix_out)
     for i in range(Npix_out):
         #lvmap[i] = np.var(inmap_nanmask[pixlist[i]])
-        #if len(pixlist[i])!= 0: lvmap[i] = np.sum(inmap[pixlist[i]]**2)/len(pixlist[i])
         if len(pixlist[i])!= 0: lvmap[i] = np.sum((inmap[pixlist[i]]-np.nanmean(inmap_nanmask))**2)/len(pixlist[i])
+        #if len(pixlist[i])!= 0: lvmap[i] = np.sum(inmap[pixlist[i]]**2)/len(pixlist[i])
         
     return lvmap
 
