@@ -365,9 +365,10 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
         
     lvmap = np.zeros(Npix_out)
     for i in range(Npix_out):
-        #lvmap[i] = np.var(inmap_nanmask[pixlist[i]])
-        if len(pixlist[i])!= 0: lvmap[i] = np.sum((inmap[pixlist[i]]-np.nanmean(inmap_nanmask))**2)/len(pixlist[i])
-        #if len(pixlist[i])!= 0: lvmap[i] = np.sum(inmap[pixlist[i]]**2)/len(pixlist[i])
+        if len(pixlist[i])!= 0:
+            lvmap[i] = np.var(inmap_nanmask[pixlist[i]])
+            #lvmap[i] = np.sum((inmap[pixlist[i]]-np.nanmean(inmap_nanmask))**2)/len(pixlist[i])
+            #lvmap[i] = np.sum(inmap[pixlist[i]]**2)/len(pixlist[i])
         
     return lvmap
 
