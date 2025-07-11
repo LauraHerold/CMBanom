@@ -18,15 +18,15 @@ mask_files = ["stdv_mask_1percent_v7.fits", "com_mask_cutoff_0.9_nside_128.fits"
 Nmasks     = len(names_mask)
 
 # Modes
-compute_Smu       = True
+compute_Smu       = False
 compute_R         = False
 compute_sigma16   = False
 compute_SQO       = False
-compute_envelopes = False
+compute_envelopes = True
 compute_ALV       = False
 
 ## Cl's and corr's function
-percentiles = False
+percentiles = True
 
 ## Low correlation, Smu
 summation = True
