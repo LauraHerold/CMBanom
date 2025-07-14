@@ -261,7 +261,7 @@ def load_cls(fn_cls, name_mask, Nsims, cl_wf_factor=1.):
     return cls
 
 # Adapted from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer 
-def get_Rassymstat(cl,lmax=27,clstartsat=0):
+def get_Rlmax(cl,lmax=27,clstartsat=0):
     """
     Given C_ell data and lmax, computes R stat as on page 25 of
     https://arxiv.org/abs/1506.07135, which measures amount of parity
