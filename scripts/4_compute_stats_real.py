@@ -12,9 +12,9 @@ real_dir  = "../data/real/"
 masks_dir = "../data/masks/"
 stats_dir = "../data/stats/"
 names_mask = ["fullsky", "stdmask", "commask"]
-mask_files = ["stdv_mask_1percent_v7.fits", "com_mask_cutoff_0.9_nside_128.fits"]
-names_maps = ["commander_nside_128", "nilc_nside_128", "sevem_nside_128", "smica_nside_128", "cleaned70GHz_v7_nside_128", "cleaned94GHz_v7_nside_128", "cleaned100GHz_v7_nside_128", "cleaned143GHz_v7_nside_128"]
-names_real = ["commander_nside_128", "nilc_nside_128", "sevem_nside_128", "smica_nside_128", "v7_70GHz_nside_128", "v7_94GHz_nside_128", "v7_100GHz_nside_128", "v7_143GHz_nside_128"]
+mask_files = ["1percent_mask_v9.fits", "com_mask_cutoff_0.9_nside_128.fits"]
+names_maps = ["commander_nside_128", "nilc_nside_128", "sevem_nside_128", "smica_nside_128", "cleaned_70GHz_v9_nside_128", "cleaned_94GHz_v9_nside_128", "cleaned_100GHz_v9_nside_128", "cleaned_143GHz_v9_nside_128"]
+names_real = ["commander_nside_128", "nilc_nside_128", "sevem_nside_128", "smica_nside_128", "v9_70GHz_nside_128", "v9_94GHz_nside_128", "v9_100GHz_nside_128", "v9_143GHz_nside_128"]
 Nmasks = len(names_mask)
 Nmaps = len(names_maps)
 
@@ -24,6 +24,7 @@ compute_Smu     = False
 compute_R       = False
 compute_sigma16 = False
 compute_SQO     = False
+compute_ALV     = False
 
 ## Low correlation, Smu
 summation = True
@@ -34,6 +35,10 @@ lmax_R = 60
 
 # Hemispherical asymmetry, sigma16
 ecliptic_coords = True
+
+# Hemispherical asymmetry, ALV
+theta_deg = 8
+frac_to_be_masked = 0.1
 
 ##### Compute stats
 
@@ -55,8 +60,8 @@ if compute_cl_corr:
                 os.system(f'spice -mapfile {fn_map} -maskfile {fn_mask} -corfile {fn_corr} -clfile {fn_pcl}')
 
 if compute_sigma16:
-    mask_dir_south_ecl = "mask_south_ecl_Nside16.fits"
-    mask_files = ["stdv_mask_1percent_cutoff0.9_Nside16.fits", "common-Mask-Int_cutoff0.9_Nside16.fits"]
+    mask_dir_south_ecl = "mask_south_ecl_nside_16.fits"
+    mask_files = ["stdv_mask_1percent_cutoff_0.9_nside_16.fits", "com_mask_cutoff_0.9_nside_16.fits"]
 
 if compute_Smu:
     print("Computing Smu:")
@@ -65,10 +70,8 @@ if compute_Smu:
         print(name_mask, "...")
 
         # Load corrs
-        #theta, cos_theta, corrs = CMBanom.load_corrs(corrs_dir+f"corrs_{name_mask}_100k/", name_mask, Nsims)
         theta, cos_theta = np.loadtxt(real_dir+f"corr_{names_real[0]}_{name_mask}.txt").T[:2]
         corrs = np.array([np.loadtxt(real_dir+f"corr_{names_real[n]}_{name_mask}.txt").T[2] for n in range(Nmaps)])
-        corrs[4:] *= 1e6
 
         # Compute & save Smu
         S_mu = CMBanom.S_mu_many(corrs, cos_theta, mu, summation=summation)
@@ -81,17 +84,12 @@ if compute_R:
         name_mask = names_mask[m]
         print(name_mask, "...")
 
-        # Load Planck Cl (begins with l=0) and correct window fcts. and units, shape: (Nmasks, Nmaps, lmax)
-        cl_wf_128  = CMBanom.get_cl_wf_factor(Nside_in)
-        cl_wf_1deg = CMBanom.get_cl_wf_factor(Nside_in, deg=1)
-        #cls = CMBanom.load_cls(cls_dir+f"cls_{name_mask}_100k/", name_mask, Nsims, cl_wf_factor)
-        cls = np.array([np.loadtxt(real_dir+f"cl_{names_real[n]}_{names_mask[m]}.txt").T[1] for n in range(Nmaps)])
-        for m in range(Nmasks):
-            cls[:4] *= cl_wf_128
-            cls[4:] *= 1e6*cl_wf_1deg
+        # Load Cls (correcting for pixel window fct. & beam)
+        cl_wf_factor = CMBanom.get_cl_wf_factor(Nside_in)
+        cls = np.array([np.loadtxt(real_dir+f"cl_{names_real[n]}_{names_mask[m]}.txt").T[1] for n in range(Nmaps)])*cl_wf_factor
 
         # Compute and save R
-        R = np.array([[CMBanom.get_Rassymstat(cls[n], lmax=l) for l in range(lmax_R)] for n in range(Nmaps)])
+        R = np.array([[CMBanom.get_Rlmax(cls[n], lmax=l) for l in range(lmax_R)] for n in range(Nmaps)])
         np.savetxt(stats_dir+f'R_real_{name_mask}.npy', R)
 
 if compute_sigma16:

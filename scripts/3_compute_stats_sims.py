@@ -6,7 +6,7 @@ from scipy.interpolate import UnivariateSpline
 import CMBanom
 
 # Parameters                                                                                                              
-Nsims     = 100000
+Nsims     = 100 #000
 Nside_in  = 128
 maps_dir  = "/tank/NoBackup/lherold/maps_100k/" 
 corrs_dir = "/tank/NoBackup/lherold/"
@@ -22,8 +22,8 @@ compute_Smu       = False
 compute_R         = False
 compute_sigma16   = False
 compute_SQO       = False
-compute_envelopes = True
-compute_ALV       = False
+compute_envelopes = False
+compute_ALV       = True
 
 ## Cl's and corr's function
 percentiles = True
@@ -71,7 +71,7 @@ if compute_R:
         cls = CMBanom.load_cls(cls_dir+f"cls_{name_mask}_100k/", name_mask, Nsims, cl_wf_factor)
 
         # Compute and save R
-        R = np.array([[CMBanom.get_Rassymstat(cls[n], lmax=l) for l in range(lmax_R)] for n in range(Nsims)])
+        R = np.array([[CMBanom.get_Rlmax(cls[n], lmax=l) for l in range(lmax_R)] for n in range(Nsims)])
         np.savetxt(stats_dir+f'R_sims_{name_mask}_Nsims_{Nsims}.npy', R)
 
         
@@ -158,7 +158,7 @@ if compute_ALV:
         print("- Computing ALV")
         ALV = np.zeros(Nsims)
         for n in range(Nsims):
-            ALV[n] = CMBanom.ALV(lvmaps[n], lvmaps, lvmask_nan)
+            ALV[n] = CMBanom.ALV_vec(lvmaps[n], lvmaps, lvmask_nan)[0]
             
         np.savetxt(stats_dir+f'ALV_sims_{name_mask}_Nsims_{Nsims}.npy', ALV)
     
