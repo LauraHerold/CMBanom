@@ -91,10 +91,8 @@ def read_masks(dir_mask, names_mask, Nside):
     for m in range(len(names_mask)): masks[m+1] = hp.read_map(dir_mask+names_mask[m])
     return masks
             
-
 def pval_lower(val_real, vals_sims):
     return len(np.where(vals_sims<val_real)[0])/len(vals_sims)
-    
     
 def pval_higher(val_real, vals_sims):
     return len(np.where(vals_sims>val_real)[0])/len(vals_sims)
@@ -104,8 +102,7 @@ def pval_higher(val_real, vals_sims):
 # Low correlation, S_1/2
 ##################################################################
 
-
-def corr_from_cl(theta, C_l, lmax=30):
+def corr_from_cl(theta, C_l, lmax=100):
     # Cl's starting from l=0
     ll = np.arange(2,np.minimum(len(C_l),lmax))
     cos = np.cos(theta)
