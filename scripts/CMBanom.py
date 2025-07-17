@@ -129,6 +129,19 @@ def S_mu_many(C_theta, cos_theta, mu, summation=True):
         S_mu = np.sum(C_theta_mu**2*dcos_theta, axis=1)
         
     return S_mu
+    
+def S_mu(C_theta, cos_theta, mu, summation=True):
+    """
+    Compute S_mu via naive summation of C_theta_i**2 * cos_theta_i
+    """
+    if summation:
+        dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
+            
+        # Sum only over C_theta where cos_theta<mu
+        C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
+        S_mu = np.sum(C_theta_mu**2*dcos_theta)
+        
+    return S_mu
 
 def S_mu_sum(corr_file, mu, summation=True):
     """
