@@ -108,8 +108,7 @@ def corr_from_cl(theta, C_l, lmax=100):
     cos = np.cos(theta)
     corr = np.zeros(cos.shape)
     legendre = scipy.special.legendre
-    for l in ll:
-        corr+= (2.*l + 1.)/(4*np.pi) * C_l[int(l)] * legendre(l)(cos)
+    for l in ll: corr+= (2.*l + 1.)/(4*np.pi) * C_l[int(l)] * legendre(l)(cos)
     return corr
 
 def load_corrs(fn_corrs, name_mask, Nsims):
@@ -130,71 +129,92 @@ def S_mu_many(C_theta, cos_theta, mu, summation=True):
         
     return S_mu
     
-def S_mu(C_theta, cos_theta, mu, summation=True):
+def S_mu(C_theta, cos_theta, mu=0.5, method="summation"):
     """
-    Compute S_mu via naive summation of C_theta_i**2 * cos_theta_i
+    Compute S_mu via 
+        - naive summation of C_theta_i**2 * cos_theta_i
+        - integration using Simpson's rule (quadratic interpolation procedure)   
     """
-    if summation:
+    if method=="summation":
         dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
             
         # Sum only over C_theta where cos_theta<mu
         C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
         S_mu = np.sum(C_theta_mu**2*dcos_theta)
-        
-    return S_mu
-
-def S_mu_sum(corr_file, mu, summation=True):
-    """
-    Compute S_mu via naive summation of C_theta_i**2 * cos_theta_i
-    """
-    if summation:
-        if len(corr_file.shape)==2:
-            cos_theta = corr_file[1]
-            dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
-            C_theta = 1e12*corr_file[2]
-        
-            # Sum only over C_theta where cos_theta<mu
-            C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
-            S_mu = np.sum(C_theta_mu**2*dcos_theta)
-        
-        elif len(corr_file.shape)==3:
-            cos_theta = corr_file[0,1]
-            dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
-            C_theta = 1e12*corr_file[:,2]
-        
-            # Sum only over C_theta where cos_theta<mu
-            C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
-            S_mu = np.sum(C_theta_mu**2*dcos_theta, axis=1)
-        else:
-            print("Unexpected dimension of corr_file.")   
-    return S_mu
-
-def S_mu_simps(corr_file, mu):
-    """
-    Integration using Simpson's rule (quadratic interpolation procedure)   
-    """
-    if len(corr_file.shape)==2:
-        cos_theta = corr_file[1]
+    
+    if method=="simps":
         dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
-        C_theta = 1e12*corr_file[2]
         
         # Integrate only over C_theta where cos_theta<mu
         C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
         S_mu = scipy.integrate.simps(C_theta_mu**2, x=cos_theta)
         
-    elif len(corr_file.shape)==3:
-        cos_theta = corr_file[0,1]
-        dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
-        C_theta = 1e12*corr_file[:,2]
-        
-        # Sum only over C_theta where cos_theta<mu
-        C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
-        S_mu = np.zeros(len(C_theta_mu))
-        for n in np.arange(0, len(C_theta_mu)):
-            S_mu[n] = scipy.integrate.simps(C_theta_mu[n]**2, x=cos_theta)
-    else:
-        print("Unexpected dimension of corr_file.")   
     return S_mu
+
+#def S_mu_sum(corr_file, mu, summation=True):
+#    """
+#    Compute S_mu via naive summation of C_theta_i**2 * cos_theta_i
+#    """
+#    if summation:
+#        if len(corr_file.shape)==2:
+#            cos_theta = corr_file[1]
+#            dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
+#            C_theta = 1e12*corr_file[2]
+#        
+#            # Sum only over C_theta where cos_theta<mu
+#            C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
+#            S_mu = np.sum(C_theta_mu**2*dcos_theta)
+#        
+#        elif len(corr_file.shape)==3:
+#            cos_theta = corr_file[0,1]
+#            dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
+#            C_theta = 1e12*corr_file[:,2]
+#        
+#            # Sum only over C_theta where cos_theta<mu
+#            C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
+#            S_mu = np.sum(C_theta_mu**2*dcos_theta, axis=1)
+#        else:
+#            print("Unexpected dimension of corr_file.")   
+#    return S_mu
+
+#def S_mu_simps(corr_file, mu):
+#    """
+#    Integration using Simpson's rule (quadratic interpolation procedure)   
+#    """
+#    if len(corr_file.shape)==2:
+#        cos_theta = corr_file[1]
+#        dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
+#        C_theta = 1e12*corr_file[2]
+#        
+#        # Integrate only over C_theta where cos_theta<mu
+#        C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
+#        S_mu = scipy.integrate.simps(C_theta_mu**2, x=cos_theta)
+#        
+#    elif len(corr_file.shape)==3:
+#        cos_theta = corr_file[0,1]
+#        dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
+#        C_theta = 1e12*corr_file[:,2]
+#        
+#        # Sum only over C_theta where cos_theta<mu
+#        C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
+#        S_mu = np.zeros(len(C_theta_mu))
+#        for n in np.arange(0, len(C_theta_mu)):
+#            S_mu[n] = scipy.integrate.simps(C_theta_mu[n]**2, x=cos_theta)
+#    else:
+#        print("Unexpected dimension of corr_file.")
+#    return S_mu
+    
+#def S_mu_simps(C_theta, cos_theta, mu):
+#    """
+#    Integration using Simpson's rule (quadratic interpolation procedure)   
+#    """
+#    dcos_theta = np.append(cos_theta[1:] - cos_theta[:-1], np.zeros(1))
+#        
+#    # Integrate only over C_theta where cos_theta<mu
+#    C_theta_mu = np.where(cos_theta<mu, C_theta, 0)
+#    S_mu = scipy.integrate.simps(C_theta_mu**2, x=cos_theta)
+#        
+#    return S_mu
 
 
 
@@ -204,6 +224,7 @@ def S_mu_Itab(clin,mu=0.5,LMAX=100,Itab = np.array([])):
     Computes measure of large scale power S(x)
     cl = array of C_l's in muK**2, mu= upper bound on cos(theta) integral
     """
+    
     if (not LMAX) or (LMAX>clin.size -1):
         LMAX = clin.size -1
         cl = clin
