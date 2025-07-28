@@ -1,9 +1,9 @@
 #!/bin/bash                                                                                                                                                                     
 NMIN=0
 NMAX=100000
-SIMS_100K=False
-OUTDIR="/tank/NoBackup/lherold"
-#OUTDIR="../data/sims/sims_1k"
+SIMS_100K=True
+#OUTDIR="/tank/NoBackup/lherold"
+OUTDIR="../data/sims/sims_1k"
 
 # Full sky
 #MASKFILE="None"

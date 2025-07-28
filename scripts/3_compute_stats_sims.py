@@ -6,7 +6,7 @@ from scipy.interpolate import UnivariateSpline
 import CMBanom
 
 # Parameters                                                                                                              
-Nsims     = 100 #000
+Nsims     = 100000
 Nside_in  = 128
 maps_dir  = "/tank/NoBackup/lherold/maps_100k/" 
 corrs_dir = "/tank/NoBackup/lherold/"
@@ -14,16 +14,16 @@ cls_dir   = "/tank/NoBackup/lherold/"
 masks_dir = "../data/masks/"
 stats_dir = "../data/stats/"
 names_mask = ["fullsky", "stdmask", "commask"]
-mask_files = ["stdv_mask_1percent_v7.fits", "com_mask_cutoff_0.9_nside_128.fits"]
+mask_files = ["1percent_mask_v9.fits", "com_mask_cutoff_0.9_nside_128.fits"]
 Nmasks     = len(names_mask)
 
 # Modes
+compute_envelopes = False
 compute_Smu       = False
 compute_R         = False
 compute_sigma16   = False
-compute_SQO       = False
-compute_envelopes = False
-compute_ALV       = True
+compute_SQO       = True
+compute_ALV       = False
 
 ## Cl's and corr's function
 percentiles = True
