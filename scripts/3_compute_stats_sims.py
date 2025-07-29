@@ -22,8 +22,8 @@ compute_envelopes = False
 compute_Smu       = False
 compute_R         = False
 compute_sigma16   = False
-compute_SQO       = True
-compute_ALV       = False
+compute_SQO       = False
+compute_ALV       = True
 
 ## Cl's and corr's function
 percentiles = True
