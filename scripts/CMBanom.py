@@ -102,9 +102,9 @@ def pval_higher(val_real, vals_sims):
 # Low correlation, S_1/2
 ##################################################################
 
-def corr_from_cl(theta, C_l, lmax=100):
+def corr_from_cl(theta, C_l, lmax=384):
     # Cl's starting from l=0
-    ll = np.arange(2,np.minimum(len(C_l),lmax))
+    ll = np.arange(0,np.minimum(len(C_l),lmax))
     cos = np.cos(theta)
     corr = np.zeros(cos.shape)
     legendre = scipy.special.legendre
