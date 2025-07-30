@@ -19,18 +19,18 @@ Nmasks     = len(names_mask)
 
 # Modes
 compute_envelopes = False
-compute_Smu       = False
+compute_Smu       = True
 compute_R         = False
 compute_sigma16   = False
 compute_SQO       = False
-compute_ALV       = True
+compute_ALV       = False
 
 ## Cl's and corr's function
 percentiles = True
 
 ## Low correlation, Smu
 summation = True
-mu = 0.5
+mus       = np.linspace(-0.9, 1, 20)
 
 # Parity asymmetry, R
 lmax_R = 60
@@ -56,7 +56,7 @@ if compute_Smu:
         theta, cos_theta, corrs = CMBanom.load_corrs(corrs_dir+f"corrs_{name_mask}_100k/", name_mask, Nsims)
 
         # Compute & save Smu
-        S_mu = CMBanom.S_mu_many(corrs, cos_theta, mu, summation=summation)
+        S_mu = np.array([CMBanom.S_mu_many(corrs, cos_theta, mu, summation=summation) for mu in mus])
         np.savetxt(stats_dir+f'Smu_sims_{name_mask}_Nsims_{Nsims}.npy', S_mu)
 
         
