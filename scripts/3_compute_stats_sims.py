@@ -29,8 +29,7 @@ compute_ALV       = False
 percentiles = True
 
 ## Low correlation, Smu
-summation = True
-mus       = np.linspace(-0.9, 1, 20)
+mus    = np.linspace(-1, 1, 41)
 
 # Parity asymmetry, R
 lmax_R = 60
@@ -56,7 +55,7 @@ if compute_Smu:
         theta, cos_theta, corrs = CMBanom.load_corrs(corrs_dir+f"corrs_{name_mask}_100k/", name_mask, Nsims)
 
         # Compute & save Smu
-        S_mu = np.array([CMBanom.S_mu_many(corrs, cos_theta, mu, summation=summation) for mu in mus])
+        S_mu = np.array([CMBanom.S_mu_many(corrs, cos_theta, mu, method='summation') for mu in mus])
         np.savetxt(stats_dir+f'Smu_sims_{name_mask}_Nsims_{Nsims}.npy', S_mu)
 
         
