@@ -116,7 +116,7 @@ def load_corrs(fn_corrs, name_mask, Nsims):
     corrs = np.array([np.loadtxt(fn_corrs+f'corr_{name_mask}__{n}.txt').T[2] for n in range(Nsims)])
     return theta, cos_theta, corrs
 
-def S_mu_many(C_theta, cos_theta, mu-0.5, method='summation'):
+def S_mu_many(C_theta, cos_theta, mu=-0.5, method='summation'):
     """
     Compute S_mu via naive summation of C_theta_i**2 * cos_theta_i
     """
