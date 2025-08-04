@@ -6,7 +6,7 @@ from scipy.interpolate import UnivariateSpline
 import CMBanom
 
 # Parameters                                                                                                              
-Nsims     = 100000
+Nsims     = 100 #000
 Nside_in  = 128
 maps_dir  = "/tank/NoBackup/lherold/maps_100k/" 
 corrs_dir = "/tank/NoBackup/lherold/"
@@ -144,20 +144,18 @@ if compute_ALV:
         print(name_mask, "...")
 
         print("- Computing pixlists and lvmasks")
-        pixlist = []
         pixlist = CMBanom.get_pixlist(theta_deg, mask, Nside_in, Nside_out)
         lvmask  = CMBanom.get_lvmask(pixlist, theta_deg, frac_to_be_masked, Nside_in, Nside_out)
-        lvmask_nan = np.where(lvmask==0, np.nan, 1.)
 
         print("- Computing LV maps")
-        lvmaps = np.zeros((Nsims, Npix_out))
-        for n in range(Nsims):
-            lvmaps[n] = CMBanom.get_lvmap(maps[n], mask, pixlist, Nside_out)
+        lvmaps = np.array([CMBanom.get_lvmap(maps[n], mask, pixlist, Nside_out) for n in range(Nsims)])
 
+        print("- Compute mean and var of lvmaps")
+        mean_lvmap = CMBanom.get_meanlvmap(lvmaps_sims, lvmask, f"{stats_dir}meanlvmap_{name_mask}_Nsims_{Nsims}.npy")
+        var_lvmap  = CMBanom.get_varlvmap(lvmaps_sims, lvmask, mean_lvmap, f"{stats_dir}varlvmap_{name_mask}_Nsims_{Nsims}.npy"))
+        
         print("- Computing ALV")
-        ALV = np.zeros(Nsims)
-        for n in range(Nsims):
-            ALV[n] = CMBanom.ALV_vec(lvmaps[n], lvmaps, lvmask_nan)[0]
+        ALV = np.array([CMBanom.ALV_vec(lvmaps[n], lvmask, mean_lvmap, var_lvmap)[0] for n in range(Nsims)])
             
         np.savetxt(stats_dir+f'ALV_sims_{name_mask}_Nsims_{Nsims}.npy', ALV)
     

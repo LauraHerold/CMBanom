@@ -365,7 +365,7 @@ def S_QO(ws):
 
 
 ##################################################################
-# Hemispherical asymmetry, ALV
+# Hemispherical variance asymmetry, ALV
 ##################################################################
 
 
@@ -394,7 +394,7 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
     inmap = hp.ma(inmap)
     inmap.mask = np.logical_not(mask)
     inmap = hp.remove_dipole(inmap)
-    inmap_nanmask = np.where(mask==0, np.nan, inmap.data) # avoiding warning: converting a masked element to nan
+    inmap_nanmask = np.where(mask==1, inmap.data, np.nan) # avoiding warning: converting a masked element to nan
         
     lvmap = np.zeros(Npix_out)
     for i in range(Npix_out):
@@ -405,11 +405,21 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
         
     return lvmap
 
-def ALV_vec(lvmap, lvmaps_sims, lvmask):
-
+def get_meanlvmap(lvmaps_sims, lvmask, save_fn=None):
     mean_lvmap = np.where(lvmask==1., np.mean(lvmaps_sims, axis=0), 1.)
-    var_lvmap  = np.where(lvmask==1., np.sum(lvmaps_sims**2, axis=0)/len(lvmaps_sims)/mean_lvmap**2, 1.)
-    meanvar_lvmap = np.nanmean(var_lvmap*lvmask)
+    if (save_fn != None): hp.write_map(fn, mean_lvmap, overwrite=True, dtype=np.float64)
+    return mean_lvmap
+    
+def get_varlvmap(lvmaps_sims, lvmask, mean_lvmap, save_fn=None):
+    var_lvmap  = np.where(lvmask==1., (np.sum(lvmaps_sims, axis=0)-mean_lvmap)**2/mean_lvmap**2/len(lvmaps_sims), 1.)
+    if (save_fn != None): hp.write_map(fn, var_lvmap, overwrite=True, dtype=np.float64)
+    return var_lvmap
+
+def ALV_vec(lvmap, lvmask, mean_lvmap, var_lvmap):
+    
+    lvmask_nan = np.where(lvmask==1., 1., np.nan)
+    meanvar_lvmap = np.nanmean(var_lvmap*lvmask_nan)
+    
     normlvmap = (meanvar_lvmap/var_lvmap)*(lvmap - mean_lvmap)/mean_lvmap
     normlvmap = hp.ma(normlvmap)
     normlvmap.mask = np.logical_not(lvmask)
@@ -417,15 +427,4 @@ def ALV_vec(lvmap, lvmaps_sims, lvmask):
     ALV = np.linalg.norm(dipolevec)
     
     return ALV, dipolevec
- 
-#def ALV_vec(lvmap, lvmaps_sims, lvmask):
-#    mean_lvmap = np.mean(lvmaps_sims, axis=0)
-#    var_lvmap = np.sum(lvmaps_sims**2, axis=0)/len(lvmaps_sims)/mean_lvmap**2
-#    #var_lvmap = np.var(lvmaps_sims, axis=0, ddof=1)/mean_lvmap**2
-#    meanvar_lvmap = np.nanmean(var_lvmap*lvmask)
-#    normlvmap = (meanvar_lvmap/var_lvmap)*(lvmap - mean_lvmap)/mean_lvmap
-#    normlvmap = hp.ma(normlvmap)
-#    normlvmap.mask = np.logical_not(lvmask)
-#    dipolevec = hp.remove_dipole(normlvmap, fitval = True)[2]
-#    
-#    return dipolevec
+
