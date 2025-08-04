@@ -407,12 +407,12 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
 
 def get_meanlvmap(lvmaps_sims, lvmask, save_fn=None):
     mean_lvmap = np.where(lvmask==1., np.mean(lvmaps_sims, axis=0), 1.)
-    if (save_fn != None): hp.write_map(fn, mean_lvmap, overwrite=True, dtype=np.float64)
+    if (save_fn != None): hp.write_map(save_fn, mean_lvmap, overwrite=True, dtype=np.float64)
     return mean_lvmap
     
 def get_varlvmap(lvmaps_sims, lvmask, mean_lvmap, save_fn=None):
     var_lvmap  = np.where(lvmask==1., (np.sum(lvmaps_sims, axis=0)-mean_lvmap)**2/mean_lvmap**2/len(lvmaps_sims), 1.)
-    if (save_fn != None): hp.write_map(fn, var_lvmap, overwrite=True, dtype=np.float64)
+    if (save_fn != None): hp.write_map(save_fn, var_lvmap, overwrite=True, dtype=np.float64)
     return var_lvmap
 
 def ALV_vec(lvmap, lvmask, mean_lvmap, var_lvmap):
