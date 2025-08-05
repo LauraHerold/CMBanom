@@ -143,7 +143,7 @@ if compute_ALV:
         name_mask = names_mask[m]
         print(name_mask, "...")
 
-        print("- Computing pixlists and lvmasks")
+        print("- Computing pixlist and lvmask")
         pixlist = CMBanom.get_pixlist(theta_deg, mask, Nside_in, Nside_out)
         lvmask  = CMBanom.get_lvmask(pixlist, theta_deg, frac_to_be_masked, Nside_in, Nside_out)
 
