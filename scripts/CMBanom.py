@@ -427,4 +427,3 @@ def ALV_vec(lvmap, lvmask, mean_lvmap, var_lvmap):
     ALV = np.linalg.norm(dipolevec)
     
     return ALV, dipolevec
-
