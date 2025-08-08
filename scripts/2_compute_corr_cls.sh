@@ -1,6 +1,6 @@
 #!/bin/bash                                                                                                                                                                     
 NMIN=0
-NMAX=100000
+NMAX=1000 #00
 SIMS_100K=True
 #OUTDIR="/tank/NoBackup/lherold"
 OUTDIR="../data/sims/sims_1k"
@@ -8,13 +8,13 @@ OUTDIR="../data/sims/sims_1k"
 # Full sky
 #MASKFILE="None"
 
-# Common mask
-#MASKFILE="../data/masks/com_mask_cutoff_0.9_nside_128.fits"
-#MASKLABEL="commask"
-
-# Std. mask
+# Std. mask                                                                                                                                     
 MASKFILE="../data/masks/1percent_mask_v9.fits"
 MASKLABEL="stdmask"
+
+# Common mask
+MASKFILE="../data/masks/com_mask_cutoff_0.9_nside_128.fits"
+MASKLABEL="commask"
 
 if [[ "$MASKFILE" == "None" ]]; then
     for N in `seq $NMIN $NMAX`; do
@@ -40,6 +40,6 @@ else
             CORFILE="${OUTDIR}/corrs_${MASKLABEL}_100k/corr_${MASKLABEL}__${N}.txt"
             CLFILE="${OUTDIR}/cls_${MASKLABEL}_100k/cl_${MASKLABEL}__${N}.txt"
 	fi
-        spice -mapfile $MAPFILE -maskfile $MASKFILE -corfile $CORFILE -clfile $CLFILE
+        spice -mapfile $MAPFILE -maskfile $MASKFILE -corfile $CORFILE -clfile $CLFILE -subdipole YES
     done
 fi

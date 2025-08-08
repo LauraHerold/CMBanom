@@ -104,7 +104,7 @@ def pval_higher(val_real, vals_sims):
 
 def corr_from_cl(theta, C_l, lmax=384):
     # Cl's starting from l=0
-    ll = np.arange(0,np.minimum(len(C_l),lmax))
+    ll = np.arange(2,np.minimum(len(C_l),lmax))
     cos = np.cos(theta)
     corr = np.zeros(cos.shape)
     legendre = scipy.special.legendre
@@ -314,19 +314,11 @@ def get_Rlmax(cl,lmax=27,clstartsat=0):
     
     return R
     
-##################################################################
-# Low northern variance, sigma^2_16
-##################################################################
-    
-# This is \sigma^2_{16}, the variance at Nside = 16
-def sigma2_16(inmap, mask):
-    sigma2_16 = np.nanvar(inmap*mask)
-    #sigma2_16 = np.nansum((inmap*mask)**2)/len(np.nonzero(mask==1.)[0])
-    return sigma2_16
     
 ##################################################################
 # Multipole alignments, S_QO
 ##################################################################
+
 
 def compute_MVs(maps, mask, lmax):
 
@@ -362,6 +354,18 @@ def S_QO(ws):
     for i in range(3):
         S+= np.absolute(np.dot(ws[2], ws[3][i]))[0]
     return S/3.
+    
+    
+##################################################################
+# Low northern variance, sigma^2_16
+##################################################################
+    
+    
+# This is \sigma^2_{16}, the variance at Nside = 16
+def sigma2_16(inmap, mask):
+    sigma2_16 = np.nanvar(inmap*mask)
+    #sigma2_16 = np.nansum((inmap*mask)**2)/len(np.nonzero(mask==1.)[0])
+    return sigma2_16
 
 
 ##################################################################
