@@ -13,8 +13,8 @@ MASKFILE="../data/masks/1percent_mask_v9.fits"
 MASKLABEL="stdmask"
 
 # Common mask
-MASKFILE="../data/masks/com_mask_cutoff_0.9_nside_128.fits"
-MASKLABEL="commask"
+#MASKFILE="../data/masks/com_mask_cutoff_0.9_nside_128.fits"
+#MASKLABEL="commask"
 
 if [[ "$MASKFILE" == "None" ]]; then
     for N in `seq $NMIN $NMAX`; do
