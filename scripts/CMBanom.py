@@ -14,6 +14,7 @@ outdir_simmaps = "../../data/sims/"
 #Exception: we smooth Nside=128 to 1 deg = 60 arcmin (Planck col. smoothes to 80 arcmin)
 NSIDEtoFWHMarcmin = {2048:5, 128:60, 64:160, 16:640}
 NSIDEfid = 128
+remove_mon_dip = False
 
 ##################################################################
 # UTILITY FUNCTIONS FOR MAPS/MASKS
@@ -96,6 +97,12 @@ def pval_lower(val_real, vals_sims):
     
 def pval_higher(val_real, vals_sims):
     return len(np.where(vals_sims>val_real)[0])/len(vals_sims)
+    
+def remove_dipole(inmap, mask_bool):
+    inmap = hp.ma(inmap)
+    inmap.mask = mask_bool
+    return hp.remove_dipole(inmap)
+    
 
 
 ##################################################################
@@ -104,7 +111,8 @@ def pval_higher(val_real, vals_sims):
 
 def corr_from_cl(theta, C_l, lmax=384):
     # Cl's starting from l=0
-    ll = np.arange(2,np.minimum(len(C_l),lmax))
+    if remove_mon_dip: ll = np.arange(2,np.minimum(len(C_l),lmax))
+    else:              ll = np.arange(0,np.minimum(len(C_l),lmax))
     cos = np.cos(theta)
     corr = np.zeros(cos.shape)
     legendre = scipy.special.legendre
@@ -322,7 +330,12 @@ def get_Rlmax(cl,lmax=27,clstartsat=0):
 
 def compute_MVs(maps, mask, lmax):
 
-    # Compute alms                                                                                                               
+    # Remove monopole/dipole
+    if remove_mon_dip:
+        mask_bool = np.logical_not(mask)
+        maps = np.array([remove_dipole(maps[n], mask_bool) for n in range(len(maps))])
+
+    # Compute alms
     alms = [hp.sphtfunc.map2alm(maps[n]*mask, lmax) for n in range(len(maps))]
 
     # Compute MVs with polymv
@@ -397,7 +410,7 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
     Npix_out = hp.nside2npix(Nside_out)
     inmap = hp.ma(inmap)
     inmap.mask = np.logical_not(mask)
-    inmap = hp.remove_dipole(inmap)
+    if remove_mon_dip: inmap = hp.remove_dipole(inmap)
     inmap_nanmask = np.where(mask==1, inmap.data, np.nan) # avoiding warning: converting a masked element to nan
         
     lvmap = np.zeros(Npix_out)
