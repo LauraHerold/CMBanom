@@ -123,9 +123,9 @@ def corr_from_cl(theta, C_l, lmax=384):
     for l in ll: corr+= (2.*l + 1.)/(4*np.pi) * C_l[int(l)] * legendre(l)(cos)
     return corr
 
-def load_corrs(fn_corrs, name_mask, Nsims):
-    theta, cos_theta = np.loadtxt(fn_corrs+f'corr_{name_mask}__1.txt').T[0:2]
-    corrs = np.array([np.loadtxt(fn_corrs+f'corr_{name_mask}__{n}.txt').T[2] for n in range(Nsims)])
+def load_corrs(fn_corrs, name_mask, Nsims, name_corr="corr"):
+    theta, cos_theta = np.loadtxt(fn_corrs+f'{name_corr}_{name_mask}__1.txt').T[0:2]
+    corrs = np.array([np.loadtxt(fn_corrs+f'{name_corr}_{name_mask}__{n}.txt').T[2] for n in range(Nsims)])
     return theta, cos_theta, corrs
 
 def S_mu_many(C_theta, cos_theta, mu=-0.5, method='summation'):
