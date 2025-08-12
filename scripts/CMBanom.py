@@ -125,7 +125,7 @@ def corr_from_cl(theta, C_l, lmax=384):
 
 def load_corrs(fn_corrs, name_mask, Nsims, name_corr="corr"):
     theta, cos_theta = np.loadtxt(fn_corrs+f'{name_corr}_{name_mask}__1.txt').T[0:2]
-    corrs = np.array([np.loadtxt(fn_corrs+f'{name_corr}_{name_mask}__{n}.txt').T[2] for n in range(Nsims)])
+    corrs = np.array([np.loadtxt(fn_corrs+f'{name_corr}_{name_mask}__{n}.txt').T[2] for n in range(Nsims)])
     return theta, cos_theta, corrs
 
 def S_mu_many(C_theta, cos_theta, mu=-0.5, method='summation'):
@@ -297,12 +297,11 @@ def tabulate_Ifunc(x,LMAX):
     
     return Imat[:-1,:-1]
 
-##################################################################                                                                         
-# Parity asymmetry
+##################################################################                                                                  # Parity asymmetry
 ##################################################################
 
-def load_cls(fn_cls, name_mask, Nsims, cl_wf_factor=1.):
-    cls = np.array([np.loadtxt(fn_cls+f'cl_{name_mask}__{n}.txt').T[1] for n in range(Nsims)])*cl_wf_factor
+def load_cls(fn_cls, name_mask, Nsims, cl_wf_factor=1., name_cl='cl'):
+    cls = np.array([np.loadtxt(fn_cls+f'{name_cl}_{name_mask}__{n}.txt').T[1] for n in range(Nsims)])*cl_wf_factor
     return cls
 
 # Adapted from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer 
