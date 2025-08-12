@@ -87,9 +87,13 @@ def get_cl_wf_factor(Nside, deg=None, lmax=384):
     beam = hp.sphtfunc.gauss_beam(fwhm=deg_rad, lmax=lmax-1) # gauss_beam takes fwhm in radians
     return 1./pixwin**2/beam**2
 
-def read_masks(dir_mask, names_mask, Nside):
-    masks = np.ones((3, hp.nside2npix(Nside)))
-    for m in range(len(names_mask)): masks[m+1] = hp.read_map(dir_mask+names_mask[m])
+def read_masks(dir_mask, names_mask, Nside, fullsky=True):
+    if fullsky:
+        masks = np.ones((len(names_mask)+1, hp.nside2npix(Nside)))
+        for m in range(len(names_mask)): masks[m+1] = hp.read_map(dir_mask+names_mask[m])
+    else:
+        masks = np.ones((len(names_mask), hp.nside2npix(Nside)))
+        for m in range(len(names_mask)): masks[m] = hp.read_map(dir_mask+names_mask[m])
     return masks
             
 def pval_lower(val_real, vals_sims):
@@ -101,13 +105,13 @@ def pval_higher(val_real, vals_sims):
 def remove_dipole(inmap, mask_bool):
     inmap = hp.ma(inmap)
     inmap.mask = mask_bool
-    return hp.remove_dipole(inmap)
-    
+    return hp.remove_dipole(inmap)    
 
 
 ##################################################################
 # Low correlation, S_1/2
 ##################################################################
+
 
 def corr_from_cl(theta, C_l, lmax=384):
     # Cl's starting from l=0
