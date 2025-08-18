@@ -8,25 +8,25 @@ import CMBanom
 # Parameters                                                                                                              
 Nsims     = 10000
 Nside_in  = 128
-
-label_sim = "70GHz"
-maps_dir  = "/tank/NoBackup/hnofi/sim_maps/LCDM/cleaned10GHz/100GHz_LCDM_"
-#maps_dir  = "/tank/NoBackup/hnofi/sim_maps/LCDM/pureCMB/pureCMB_LCDM_" 
+label_sim = "pureCMB"
+#maps_dir  = "/tank/NoBackup/hnofi/sim_maps/LCDM/cleaned70GHz/70GHz_LCDM_"
+maps_dir  = "/tank/NoBackup/hnofi/sim_maps/LCDM/pureCMB/pureCMB_LCDM_" 
 corrs_dir = "/tank/NoBackup/lherold/cleaned_sims_test/"
 cls_dir   = "/tank/NoBackup/lherold/cleaned_sims_test/"
 masks_dir = "../data/masks/"
 stats_dir = "../data/stats/"
-names_mask = ["stdmask"]
-mask_files = ["1percent_mask_v9.fits"]
+names_mask = ["stdmask", "commask"]
+mask_files = ["1percent_mask_v9.fits", "com_mask_cutoff_0.9_nside_128.fits"]
+#["1percent_mask_v9.fits"]
 Nmasks     = len(names_mask)
 
 # Modes
-compute_envelopes = True
+compute_envelopes = False
 compute_Smu       = False
 compute_R         = False
 compute_sigma16   = False
-compute_SQO       = False
-compute_ALV       = False
+compute_SQO       = True
+compute_ALV       = True
 
 ## Cl's and corr's function
 percentiles = True
@@ -41,7 +41,7 @@ lmax_R = 60
 ecliptic_coords = True
 if compute_sigma16:
     mask_dir_south_ecl = "mask_south_ecl_nside_16.fits"
-    mask_files = ["stdv_mask_1percent_cutoff_0.9_nside_16.fits"]
+    mask_files = ["stdv_mask_1percent_cutoff_0.9_nside_16.fits", "com_mask_cutoff_0.9_nside_16.fits"]
 
 # Hemispherical asymmetry, ALV
 theta_deg = 8
@@ -70,11 +70,11 @@ if compute_R:
 
         # Load Cls (correcting for pixel window fct. & beam)
         cl_wf_factor = CMBanom.get_cl_wf_factor(Nside_in)
-        cls = CMBanom.load_cls(cls_dir+f"cls_{name_mask}_100k/", name_mask, Nsims, cl_wf_factor)
+        cls = CMBanom.load_cls(cls_dir, name_mask, Nsims, cl_wf_factor, name_cl=label_sim+"_LCDM_cl")
 
         # Compute and save R
         R = np.array([[CMBanom.get_Rlmax(cls[n], lmax=l) for l in range(lmax_R)] for n in range(Nsims)])
-        np.savetxt(stats_dir+f'R_sims_{name_mask}_Nsims_{Nsims}.npy', R)
+        np.savetxt(stats_dir+f'R_sims_{label_sim}_{name_mask}_Nsims_{Nsims}.npy', R)
 
         
 if compute_sigma16:
@@ -112,7 +112,7 @@ if compute_SQO:
     masks = CMBanom.read_masks(masks_dir, mask_files, Nside_in)
 
     # Load maps                                                                                                                  
-    maps = [hp.read_map(maps_dir+f"map__{n}.fits") for n in range(Nsims)]
+    maps = [hp.read_map(maps_dir+f"{n:05}.fits") for n in range(Nsims)]
         
     for m in range(Nmasks):
         mask = masks[m]
@@ -127,7 +127,7 @@ if compute_SQO:
 
         print("- Computing SQO")
         SQO = np.array([CMBanom.S_QO(ws[n]) for n in range(Nsims)])
-        np.savetxt(stats_dir+f'SQO_sims_{name_mask}_Nsims_{Nsims}.npy', SQO)
+        np.savetxt(stats_dir+f'SQO_sims_{label_sim}_{name_mask}_Nsims_{Nsims}.npy', SQO)
 
 
 if compute_ALV:
@@ -139,7 +139,7 @@ if compute_ALV:
     
     # Load maps and masks
     masks = CMBanom.read_masks(masks_dir, mask_files, Nside_in)
-    maps  = [hp.read_map(maps_dir+f"map__{n}.fits") for n in range(Nsims)]
+    maps  = [hp.read_map(maps_dir+f"{n:05}.fits") for n in range(Nsims)]
 
     for m in range(Nmasks):
         mask = masks[m]
@@ -154,16 +154,17 @@ if compute_ALV:
         lvmaps = np.array([CMBanom.get_lvmap(maps[n], mask, pixlist, Nside_out) for n in range(Nsims)])
 
         print("- Compute mean and var of lvmaps")
-        mean_lvmap = CMBanom.get_meanlvmap(lvmaps, lvmask, f"{stats_dir}meanlvmap_{name_mask}_Nsims_{Nsims}.npy")
-        var_lvmap  = CMBanom.get_varlvmap(lvmaps, lvmask, mean_lvmap, f"{stats_dir}varlvmap_{name_mask}_Nsims_{Nsims}.npy")
+        mean_lvmap = CMBanom.get_meanlvmap(lvmaps, lvmask, f"{stats_dir}meanlvmap_{label_sim}_{name_mask}_Nsims_{Nsims}.npy")
+        var_lvmap  = CMBanom.get_varlvmap(lvmaps, lvmask, mean_lvmap, f"{stats_dir}varlvmap_{label_sim}_{name_mask}_Nsims_{Nsims}.npy")
         
         print("- Computing ALV")
         ALV = np.array([CMBanom.ALV_vec(lvmaps[n], lvmask, mean_lvmap, var_lvmap)[0] for n in range(Nsims)])
             
-        np.savetxt(stats_dir+f'ALV_sims_{name_mask}_Nsims_{Nsims}.npy', ALV)
+        np.savetxt(stats_dir+f'ALV_sims_{label_sim}_{name_mask}_Nsims_{Nsims}.npy', ALV)
     
 # Compute Cl and corr envelopes
 if compute_envelopes:
+    print("Computing envelopes:")
     for m in range(len(names_mask)):
         name_mask = names_mask[m]
         print(name_mask, "...")

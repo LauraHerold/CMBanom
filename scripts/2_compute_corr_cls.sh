@@ -12,15 +12,15 @@ NMAX=10000
 
 # Hayley's fake-cleaned sims
 SIMS_TYPE="Hayley"
-MAPDIR="/tank/NoBackup/hnofi/sim_maps/LCDM/cleaned94GHz/94GHz_LCDM"
-OUTDIR="/tank/NoBackup/lherold/cleaned_sims_test/94GHz_LCDM"
+MAPDIR="/tank/NoBackup/hnofi/sim_maps/LCDM/pureCMB/pureCMB_LCDM"
+OUTDIR="/tank/NoBackup/lherold/cleaned_sims_test/pureCMB_LCDM"
 
 # Sky cut
 #MASKFILE="None"
-MASKFILE="../data/masks/1percent_mask_v9.fits"
-MASKLABEL="stdmask"
-#MASKFILE="../data/masks/com_mask_cutoff_0.9_nside_128.fits"
-#MASKLABEL="commask"
+#MASKFILE="../data/masks/1percent_mask_v9.fits"
+#MASKLABEL="stdmask"
+MASKFILE="../data/masks/com_mask_cutoff_0.9_nside_128.fits"
+MASKLABEL="commask"
 
 if [[ "$SIMS_TYPE" == "full" ]]; then
     if [[ "$MASKFILE" == "None" ]]; then
