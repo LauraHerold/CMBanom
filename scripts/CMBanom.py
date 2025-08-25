@@ -297,7 +297,8 @@ def tabulate_Ifunc(x,LMAX):
     
     return Imat[:-1,:-1]
 
-##################################################################                                                                  # Parity asymmetry
+##################################################################
+# Parity asymmetry
 ##################################################################
 
 def load_cls(fn_cls, name_mask, Nsims, cl_wf_factor=1., name_cl='cl'):
@@ -305,7 +306,7 @@ def load_cls(fn_cls, name_mask, Nsims, cl_wf_factor=1., name_cl='cl'):
     return cls
 
 # Adapted from https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer 
-def get_Rlmax(cl,lmax=27,clstartsat=0):
+def get_Rlmax(cl,lmax=27):
     """
     Given C_ell data and lmax, computes R stat as on page 25 of
     https://arxiv.org/abs/1506.07135, which measures amount of parity
@@ -320,7 +321,7 @@ def get_Rlmax(cl,lmax=27,clstartsat=0):
         isodd = (ell%2).astype(bool)
         iseven = np.logical_not(isodd)
 
-        Dl = ell*(ell+1.)*cl[LMIN-clstartsat:lmax+1-clstartsat]
+        Dl = ell*(ell+1.)*cl[LMIN:lmax+1]
         R = np.mean(Dl[iseven])/np.mean(Dl[isodd])
     
     return R
