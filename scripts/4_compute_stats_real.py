@@ -106,7 +106,6 @@ if compute_sigma16:
     # Read maps
     print("Downgrading maps")
     maps_128 = [hp.read_map(real_dir+f"map_{name}.fits") for name in names_maps]
-    maps_128[4:] = [map * 1.e3 for map in maps_128[4:]] # Convert units to muK
     maps_16  = [CMBanom.downgrade_map(map, Nside_out) for map in maps_128]
 
     print("Computing sigma_16")
@@ -128,7 +127,6 @@ if compute_SQO:
 
     # Load maps
     maps = [hp.read_map(real_dir+f"map_{names_maps[n]}.fits") for n in range(Nmaps)]
-    maps[4:] = [map * 1.e3 for map in maps[4:]] # Convert units to muK   
     
     for m in range(len(names_mask)):
         mask = masks[m]
