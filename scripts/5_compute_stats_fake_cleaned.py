@@ -8,23 +8,24 @@ import CMBanom
 # Parameters                                                                                                              
 Nsims     = 10000
 Nside_in  = 128
-label_sim = "pureCMB"
-#maps_dir  = "/tank/NoBackup/hnofi/sim_maps/LCDM/cleaned70GHz/70GHz_LCDM_"
-maps_dir  = "/tank/NoBackup/hnofi/sim_maps/LCDM/pureCMB/pureCMB_LCDM_" 
+label_sim = "143GHz"
+maps_dir  = "/tank/NoBackup/hnofi/sim_maps/LCDM/cleaned143GHz/143GHz_LCDM_"
+#maps_dir  = "/tank/NoBackup/hnofi/sim_maps/LCDM/pureCMB/pureCMB_LCDM_" 
 corrs_dir = "/tank/NoBackup/lherold/cleaned_sims_test/"
 cls_dir   = "/tank/NoBackup/lherold/cleaned_sims_test/"
 masks_dir = "../data/masks/"
 stats_dir = "../data/stats/"
-names_mask = ["stdmask", "commask"]
-mask_files = ["1percent_mask_v9.fits", "com_mask_cutoff_0.9_nside_128.fits"]
-#["1percent_mask_v9.fits"]
+names_mask = ["fullsky"]
+mask_files = []
+#["1percent_mask_v9.fits", "com_mask_cutoff_0.9_nside_128.fits"]
 Nmasks     = len(names_mask)
+fullsky = True
 
 # Modes
-compute_envelopes = False
-compute_Smu       = False
-compute_R         = False
-compute_sigma16   = False
+compute_envelopes = True
+compute_Smu       = True
+compute_R         = True
+compute_sigma16   = True
 compute_SQO       = True
 compute_ALV       = True
 
@@ -41,7 +42,8 @@ lmax_R = 60
 ecliptic_coords = True
 if compute_sigma16:
     mask_dir_south_ecl = "mask_south_ecl_nside_16.fits"
-    mask_files = ["stdv_mask_1percent_cutoff_0.9_nside_16.fits", "com_mask_cutoff_0.9_nside_16.fits"]
+    mask_files = []
+    #["stdv_mask_1percent_cutoff_0.9_nside_16.fits", "com_mask_cutoff_0.9_nside_16.fits"]
 
 # Hemispherical asymmetry, ALV
 theta_deg = 8
@@ -85,7 +87,7 @@ if compute_sigma16:
     # Load masks and convert zeros to nans
     if ecliptic_coords: mask_for_north = hp.read_map(masks_dir+mask_dir_south_ecl)
     else: mask_for_north = np.append(np.ones(len_mask_16/2), np.zeros(len_mask_16/2))
-    masks_01 = CMBanom.read_masks(masks_dir, mask_files, Nside_out, fullsky=False)
+    masks_01 = CMBanom.read_masks(masks_dir, mask_files, Nside_out, fullsky=fullsky)
     masks = np.where(np.array([mask*mask_for_north for mask in masks_01])==0, np.nan, 1)
 
     # Read maps                                                                                                               
@@ -109,7 +111,7 @@ if compute_SQO:
     print("Computing SQO:")
 
     # Load masks
-    masks = CMBanom.read_masks(masks_dir, mask_files, Nside_in)
+    masks = CMBanom.read_masks(masks_dir, mask_files, Nside_in, fullsky=fullsky)
 
     # Load maps                                                                                                                  
     maps = [hp.read_map(maps_dir+f"{n:05}.fits") for n in range(Nsims)]
@@ -138,7 +140,7 @@ if compute_ALV:
     print("Computing ALV:")
     
     # Load maps and masks
-    masks = CMBanom.read_masks(masks_dir, mask_files, Nside_in)
+    masks = CMBanom.read_masks(masks_dir, mask_files, Nside_in, fullsky=fullsky)
     maps  = [hp.read_map(maps_dir+f"{n:05}.fits") for n in range(Nsims)]
 
     for m in range(Nmasks):
