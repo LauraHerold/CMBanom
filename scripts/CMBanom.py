@@ -1,4 +1,4 @@
-# This script is an adaption of Jessica Muir's github https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer/tree/master and paper https://arxiv.org/abs/1806.02354
+# Large parts of this script are adapted from Jessica Muir's github https://github.com/jessmuir/cmbanomcov_muir-adhikari-huterer/tree/master and paper https://arxiv.org/abs/1806.02354
 import numpy as np
 import healpy as hp
 import scipy
@@ -354,6 +354,7 @@ def get_lvmap(inmap, mask, pixlist, Nside_out):
     for i in range(Npix_out):
         if len(pixlist[i])!= 0:
             lvmap[i] = np.var(inmap_nanmask[pixlist[i]])
+            # Alternative definitions of LV-map
             #lvmap[i] = np.sum((inmap[pixlist[i]]-np.nanmean(inmap_nanmask))**2)/len(pixlist[i])
             #lvmap[i] = np.sum(inmap[pixlist[i]]**2)/len(pixlist[i])
         
